@@ -1,0 +1,12 @@
+faststream~=0.2.14
+aio-pika
+tortoise-orm
+tortoise-orm[asyncpg]
+environs~=9.5.0
+asyncpg
+aerich
+attrs~=21.4.0
+python-dotenv~=1.0.0
+httpx
+money~=1.3.0
+simplejson~=3.19.2
