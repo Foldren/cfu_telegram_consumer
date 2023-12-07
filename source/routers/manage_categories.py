@@ -1,8 +1,9 @@
-import traceback
-
 from faststream.rabbit import RabbitRouter
-from components.requests.manage_categories import CreateCategoryRequest
-from components.responses.manage_categories import CreateCategoryResponse
+from components.requests.manage_categories import CreateCategoryRequest, UpdateCategoryRequest, DeleteCategoriesRequest, \
+    GetCategoriesRequest
+from components.responses.children import DCategory
+from components.responses.manage_categories import CreateCategoryResponse, UpdateCategoryResponse, \
+    DeleteCategoriesResponse, GetCategoriesResponse
 from decorators import consumer
 from models import Category
 from queues import telegram_queue
@@ -28,47 +29,41 @@ async def create_category(request: CreateCategoryRequest):
     return CreateCategoryResponse(id=created_category.id)
 
 
-# @consumer(router=router, queue=telegram_queue, pattern="bank.update-user-bank", request=UpdateUserBankRequest)
-# async def update_user_bank(request: UpdateUserBankRequest):
-#     user_bank = await UserBank.filter(id=request.id, user_id=request.userID).first()
-#     support_bank = await user_bank.support_bank
-#
-#     if request.name:
-#         user_bank.name = request.name
-#     if request.token:
-#         user_bank.token = request.token.encode()
-#
-#     await user_bank.save()
-#     await user_bank.refresh_from_db()
-#
-#     return UpdateUserBankResponse(
-#         id=user_bank.id,
-#         name=user_bank.name,
-#         bankID=support_bank.id,
-#         bankUrl=support_bank.logo_url
-#     )
-#
-#
-# @consumer(router=router, queue=telegram_queue, pattern="bank.delete-user-bank", request=DeleteUserBankRequest)
-# async def delete_user_bank(request: DeleteUserBankRequest):
-#     await UserBank.filter(id=request.bankID, user_id=request.userID).delete()
-#
-#     return DeleteUserBankResponse(id=request.bankID)
-#
-#
-# @consumer(router=router, queue=telegram_queue, pattern="bank.get-user-banks", request=GetUserBankRequest)
-# async def get_user_banks(request: GetUserBankRequest):
-#     user_banks = await UserBank.filter(user_id=request.userID).select_related("support_bank")
-#     list_bank = []
-#
-#     for bank in user_banks:
-#         list_bank.append(
-#             DBank(id=bank.id, name=bank.name, bankID=bank.support_bank.id, token=bank.token.decode('utf-8'))
-#         )
-#
-#     return GetUserBankResponse(banks=list_bank)
-#
-#
+@consumer(router=router, queue=telegram_queue, pattern="telegram.update-category", request=UpdateCategoryRequest)
+async def update_category(request: UpdateCategoryRequest):
+    category = await Category.filter(id=request.id, user_id=request.userID).first()
+
+    if request.name:
+        category.name = request.name
+    if request.status:
+        category.status = request.status
+
+    await category.save()
+    await category.refresh_from_db()
+
+    return UpdateCategoryResponse(id=category.id)
+
+
+@consumer(router=router, queue=telegram_queue, pattern="telegram.delete-categories", request=DeleteCategoriesRequest)
+async def delete_categories(request: DeleteCategoriesRequest):
+    await Category.filter(id__in=request.categoriesID, user_id=request.userID).delete()
+
+    return DeleteCategoriesResponse(categoriesID=request.categoriesID)
+
+
+@consumer(router=router, queue=telegram_queue, pattern="telegram.get-categories", request=GetCategoriesRequest)
+async def get_categories(request: GetCategoriesRequest):
+    categories = await Category.filter(user_id=request.userID, parent_id=request.parentID).all()
+    list_categories = []
+
+    for category in categories:
+        list_categories.append(
+            DCategory(id=category.id, name=category.name, status=category.status, level=category.level)
+        )
+
+    return GetCategoriesResponse(categories=list_categories)
+
+
 # @consumer(router=router, queue=telegram_queue, pattern="bank.close-user-bank-account", request=CloseBankAccountRequest)
 # async def close_user_bank_account(request: CloseBankAccountRequest):
 #     pa = await PaymentAccount.filter(id=request.paymentAccountID, user_bank__user_id=request.userID).first()
