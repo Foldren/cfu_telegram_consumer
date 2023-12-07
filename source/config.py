@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 IS_THIS_LOCAL = "Pycharm" in str(Path.cwd())
-TELEGRAM_QUEUE = "test_queue"  # if IS_THIS_LOCAL else "telegram_queue"
+TELEGRAM_QUEUE = "test_queue" if IS_THIS_LOCAL else "telegram_queue"
 POSTGRES_URL = getenv('POSTGRES_URL')
 RABBITMQ_URL = getenv('RABBITMQ_URL')
 AERICH_CONFIG = {
