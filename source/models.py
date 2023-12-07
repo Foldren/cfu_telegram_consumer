@@ -18,7 +18,7 @@ class Category(Model):
     parent: ForeignKeyRelation['Category'] = ForeignKeyField('models.Category', on_delete=OnDelete.CASCADE,
                                                              related_name="children", null=True)
     children: ReverseRelation["Category"]  # Связь один ко многим к самому себе (выводим дочерние элементы)
-    contragents: ReverseRelation['Contragent']
+    counterparties: ReverseRelation['Counterparty']
     name = CharField(max_length=100)
     status = BooleanField(default=1, null=True)
     level = IntEnumField(enum_type=CategoryLevel, default=1, null=True, description="Уровень категории расходов")
@@ -29,18 +29,18 @@ class Category(Model):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-class Contragent(Model):
+class Counterparty(Model):
     id = BigIntField(pk=True)
     user_id = CharField(max_length=100, index=True)
     category: ForeignKeyRelation['Category'] = ForeignKeyField('models.Category',
                                                                on_delete=OnDelete.SET_NULL,
-                                                               related_name="contragents",
+                                                               related_name="counterparties",
                                                                null=True)
     inn = CharField(max_length=12)
     name = CharField(max_length=100)
 
     class Meta:
-        table = "contragents"
+        table = "counterparties"
 
 # ----------------------------------------------------------------------------------------------------------------------
 

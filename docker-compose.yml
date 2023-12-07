@@ -1,13 +1,13 @@
 version: "3.3"
 services:
-  bank_consumer:
+  telegram_consumer:
     build: .
-    image: bank_consumer
-    container_name: bank_consumer
+    image: telegram_consumer
+    container_name: telegram_consumer
     environment:
       - TZ=Europe/Moscow
     volumes:
-      - /home/user/.volumes/bank_consumer/source:/source:rw
+      - /home/user/.volumes/telegram_consumer/source:/source:rw
     tty: true
     working_dir: /source
     command: ["python", "main.py"]
