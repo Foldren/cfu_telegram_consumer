@@ -1,59 +1,51 @@
 from faststream.rabbit import RabbitRouter
-from components.requests.manage_categories import CreateCategoryRequest, UpdateCategoryRequest, DeleteCategoriesRequest, \
+from components.requests.manage_categories import CreateCategoryRequest, DeleteCategoriesRequest, \
     GetCategoriesRequest
-from components.responses.children import DCategory
-from components.responses.manage_categories import CreateCategoryResponse, UpdateCategoryResponse, \
-    DeleteCategoriesResponse, GetCategoriesResponse
+from components.requests.manage_counterparties import CreateCounterpartyRequest, DeleteCounterpartiesRequest, \
+    GetCounterpartiesRequest
+from components.responses.children import DCategory, DCounterparty
+from components.responses.manage_categories import DeleteCategoriesResponse, GetCategoriesResponse
+from components.responses.manage_counterparties import CreateCounterpartyResponse, DeleteCounterpartiesResponse, \
+    GetCounterpartiesResponse
 from decorators import consumer
-from models import Category
+from models import Category, Counterparty
 from queues import telegram_queue
 
 router = RabbitRouter()
 
 
-@consumer(router=router, queue=telegram_queue, pattern="telegram.create-counterparty", request=CreateCategoryRequest)
-async def create_counterparty(request: CreateCategoryRequest):
-    created_category = await Category.create(
+@consumer(router=router, queue=telegram_queue, pattern="telegram.create-counterparty", request=CreateCounterpartyRequest)
+async def create_counterparty(request: CreateCounterpartyRequest):
+    created_counterparty = await Counterparty.create(
         user_id=request.userID,
-        parent_id=request.parentID,
         name=request.name,
-        level=request.level,
-
+        inn=request.inn,
+        categoryID=request.categoryID,
     )
 
-    return CreateCategoryResponse(id=created_category.id)
+    return CreateCounterpartyResponse(id=created_counterparty.id)
 
 
-@consumer(router=router, queue=telegram_queue, pattern="telegram.update-counterparty", request=UpdateCategoryRequest)
-async def update_counterparty(request: UpdateCategoryRequest):
-    category = await Category.filter(id=request.id, user_id=request.userID).first()
+@consumer(router=router, queue=telegram_queue, pattern="telegram.delete-counterparties", request=DeleteCounterpartiesRequest)
+async def delete_counterparties(request: DeleteCounterpartiesRequest):
+    await Counterparty.filter(id__in=request.counterpartiesID, user_id=request.userID).delete()
 
-    if request.name:
-        category.name = request.name
-    if request.status:
-        category.status = request.status
-
-    await category.save()
-    await category.refresh_from_db()
-
-    return UpdateCategoryResponse(id=category.id)
+    return DeleteCounterpartiesResponse(counterpartiesID=request.counterpartiesID)
 
 
-@consumer(router=router, queue=telegram_queue, pattern="telegram.delete-counterparties", request=DeleteCategoriesRequest)
-async def delete_counterparties(request: DeleteCategoriesRequest):
-    await Category.filter(id__in=request.categoriesID, user_id=request.userID).delete()
+@consumer(router=router, queue=telegram_queue, pattern="telegram.get-counterparties", request=GetCounterpartiesRequest)
+async def get_counterparties(request: GetCounterpartiesRequest):
+    counterparties = await Counterparty.filter(user_id=request.userID).select_related("category").all()
+    list_counterparties = []
 
-    return DeleteCategoriesResponse(categoriesID=request.categoriesID)
-
-
-@consumer(router=router, queue=telegram_queue, pattern="telegram.get-counterparties", request=GetCategoriesRequest)
-async def get_counterparties(request: GetCategoriesRequest):
-    categories = await Category.filter(user_id=request.userID, parent_id=request.parentID).all()
-    list_categories = []
-
-    for category in categories:
-        list_categories.append(
-            DCategory(id=category.id, name=category.name, status=category.status, level=category.level)
+    for counterparty in counterparties:
+        list_counterparties.append(
+            DCounterparty(id=counterparty.id,
+                          name=counterparty.name,
+                          inn=counterparty.inn,
+                          categoryID=counterparty.category.id,
+                          categoryName=counterparty.category.name,
+            )
         )
 
-    return GetCategoriesResponse(categories=list_categories)
+    return GetCounterpartiesResponse(counterparties=list_counterparties)

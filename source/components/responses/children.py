@@ -8,3 +8,13 @@ class DCategory:
     name: str
     status: bool
     level: int
+
+
+@dataclass
+class DCounterparty:
+    __slots__ = {"id", "name", "inn", "categoryID", "categoryName"}
+    id: int
+    name: str
+    inn: str
+    categoryID: int
+    categoryName: str
