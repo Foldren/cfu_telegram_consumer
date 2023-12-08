@@ -17,7 +17,7 @@ class UpdateCategoryResponse:
 
 @dataclass
 class DeleteCategoriesResponse:
-    __slots__ = {"id"}
+    __slots__ = {"categoriesID"}
     categoriesID: list[int]
 
 

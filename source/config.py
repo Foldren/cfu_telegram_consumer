@@ -13,7 +13,7 @@ AERICH_CONFIG = {
     "apps": {
         "models": {
             "models": ["source.models", "aerich.models"],
-            "default_connection": "default",
+            "default_connection": "default"
         },
-    },
+    }
 }

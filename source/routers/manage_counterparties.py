@@ -11,13 +11,8 @@ from queues import telegram_queue
 router = RabbitRouter()
 
 
-# @router.subscriber(queue=telegram_queue)
-# async def purge_messages():
-#     pass
-
-
-@consumer(router=router, queue=telegram_queue, pattern="telegram.create-category", request=CreateCategoryRequest)
-async def create_category(request: CreateCategoryRequest):
+@consumer(router=router, queue=telegram_queue, pattern="telegram.create-counterparty", request=CreateCategoryRequest)
+async def create_counterparty(request: CreateCategoryRequest):
     created_category = await Category.create(
         user_id=request.userID,
         parent_id=request.parentID,
@@ -29,8 +24,8 @@ async def create_category(request: CreateCategoryRequest):
     return CreateCategoryResponse(id=created_category.id)
 
 
-@consumer(router=router, queue=telegram_queue, pattern="telegram.update-category", request=UpdateCategoryRequest)
-async def update_category(request: UpdateCategoryRequest):
+@consumer(router=router, queue=telegram_queue, pattern="telegram.update-counterparty", request=UpdateCategoryRequest)
+async def update_counterparty(request: UpdateCategoryRequest):
     category = await Category.filter(id=request.id, user_id=request.userID).first()
 
     if request.name:
@@ -44,15 +39,15 @@ async def update_category(request: UpdateCategoryRequest):
     return UpdateCategoryResponse(id=category.id)
 
 
-@consumer(router=router, queue=telegram_queue, pattern="telegram.delete-categories", request=DeleteCategoriesRequest)
-async def delete_categories(request: DeleteCategoriesRequest):
+@consumer(router=router, queue=telegram_queue, pattern="telegram.delete-counterparties", request=DeleteCategoriesRequest)
+async def delete_counterparties(request: DeleteCategoriesRequest):
     await Category.filter(id__in=request.categoriesID, user_id=request.userID).delete()
 
     return DeleteCategoriesResponse(categoriesID=request.categoriesID)
 
 
-@consumer(router=router, queue=telegram_queue, pattern="telegram.get-categories", request=GetCategoriesRequest)
-async def get_categories(request: GetCategoriesRequest):
+@consumer(router=router, queue=telegram_queue, pattern="telegram.get-counterparties", request=GetCategoriesRequest)
+async def get_counterparties(request: GetCategoriesRequest):
     categories = await Category.filter(user_id=request.userID, parent_id=request.parentID).all()
     list_categories = []
 
