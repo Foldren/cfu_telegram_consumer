@@ -31,7 +31,7 @@ async def create_category(request: CreateCategoryRequest):
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.update-category", request=UpdateCategoryRequest)
 async def update_category(request: UpdateCategoryRequest):
-    category = await Category.filter(id=request.id, user_id=request.userID).first()
+    category = await Category.filter(id=request.categoryID, user_id=request.userID).first()
 
     if request.name:
         category.name = request.name

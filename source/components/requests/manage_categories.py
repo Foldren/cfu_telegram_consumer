@@ -12,7 +12,7 @@ class CreateCategoryRequest:
 
 @dataclass
 class UpdateCategoryRequest:
-    id: int
+    categoryID: int
     userID: str
     name: str = None
     observersID: list[str] = None
