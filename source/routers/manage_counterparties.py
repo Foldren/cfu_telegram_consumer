@@ -1,14 +1,11 @@
 from faststream.rabbit import RabbitRouter
-from components.requests.manage_categories import CreateCategoryRequest, DeleteCategoriesRequest, \
-    GetCategoriesRequest
 from components.requests.manage_counterparties import CreateCounterpartyRequest, DeleteCounterpartiesRequest, \
     GetCounterpartiesRequest
-from components.responses.children import DCategory, DCounterparty
-from components.responses.manage_categories import DeleteCategoriesResponse, GetCategoriesResponse
+from components.responses.children import DCounterparty
 from components.responses.manage_counterparties import CreateCounterpartyResponse, DeleteCounterpartiesResponse, \
     GetCounterpartiesResponse
 from decorators import consumer
-from models import Category, Counterparty
+from models import Counterparty
 from queues import telegram_queue
 
 router = RabbitRouter()
