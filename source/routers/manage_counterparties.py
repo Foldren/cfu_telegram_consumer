@@ -1,3 +1,5 @@
+import traceback
+
 from faststream.rabbit import RabbitRouter
 from components.requests.manage_counterparties import CreateCounterpartyRequest, DeleteCounterpartiesRequest, \
     GetCounterpartiesRequest
@@ -17,7 +19,7 @@ async def create_counterparty(request: CreateCounterpartyRequest):
         user_id=request.userID,
         name=request.name,
         inn=request.inn,
-        categoryID=request.categoryID,
+        category_id=request.categoryID,
     )
 
     return CreateCounterpartyResponse(id=created_counterparty.id)
