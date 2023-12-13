@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 
 
 @dataclass
@@ -18,3 +19,24 @@ class DCounterparty:
     inn: str
     categoryID: int
     categoryName: str
+
+
+@dataclass
+class DBalanceResponse:
+    __slots__ = {"balance", "currency"}
+    balance: Decimal
+    currency: str
+
+
+@dataclass
+class DExpensesResponse:
+    __slots__ = {"cash", "nonCash"}
+    cash: DBalanceResponse
+    nonCash: DBalanceResponse
+
+
+@dataclass
+class DCashBalanceOnHandResponse:
+    __slots__ = {"userID", "balance"}
+    userID: str
+    balance: DBalanceResponse

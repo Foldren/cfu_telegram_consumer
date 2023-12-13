@@ -1,5 +1,3 @@
-import traceback
-
 from faststream.rabbit import RabbitRouter
 from components.requests.manage_counterparties import CreateCounterpartyRequest, DeleteCounterpartiesRequest, \
     GetCounterpartiesRequest
@@ -13,7 +11,8 @@ from queues import telegram_queue
 router = RabbitRouter()
 
 
-@consumer(router=router, queue=telegram_queue, pattern="telegram.create-counterparty", request=CreateCounterpartyRequest)
+@consumer(router=router, queue=telegram_queue, pattern="telegram.create-counterparty",
+          request=CreateCounterpartyRequest)
 async def create_counterparty(request: CreateCounterpartyRequest):
     created_counterparty = await Counterparty.create(
         user_id=request.userID,
@@ -25,7 +24,8 @@ async def create_counterparty(request: CreateCounterpartyRequest):
     return CreateCounterpartyResponse(id=created_counterparty.id)
 
 
-@consumer(router=router, queue=telegram_queue, pattern="telegram.delete-counterparties", request=DeleteCounterpartiesRequest)
+@consumer(router=router, queue=telegram_queue, pattern="telegram.delete-counterparties",
+          request=DeleteCounterpartiesRequest)
 async def delete_counterparties(request: DeleteCounterpartiesRequest):
     await Counterparty.filter(id__in=request.counterpartiesID, user_id=request.userID).delete()
 

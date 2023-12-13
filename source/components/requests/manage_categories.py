@@ -2,6 +2,22 @@ from dataclasses import dataclass
 
 
 @dataclass
+class CashBalancesOnHandRequest:
+    __slots__ = {"usersID", "legalEntitiesID"}
+    usersID: list[str]
+    legalEntitiesID: list[str]
+
+
+@dataclass
+class ExpensesRequest:
+    __slots__ = {"dateFrom", "dateTo", "legalEntities", "userID"}
+    dateFrom: str
+    dateTo: str
+    legalEntities: list[str]
+    userID: str
+
+
+@dataclass
 class CreateCategoryRequest:
     userID: str
     name: str

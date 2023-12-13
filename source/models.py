@@ -1,30 +1,29 @@
 from enum import Enum, IntEnum
 from tortoise import Model
-from tortoise.fields import TextField, BooleanField, ForeignKeyField, OnDelete, \
-    ForeignKeyRelation, ReverseRelation, BigIntField, CharField, IntEnumField, CharEnumField
+from tortoise.fields import TextField, ForeignKeyField, OnDelete, \
+    ForeignKeyRelation, ReverseRelation, BigIntField, CharField, CharEnumField, DecimalField, DateField, IntEnumField
 
 
-class CategoryLevel(IntEnum):
-    lvl_1 = 1
-    lvl_2 = 2
-    lvl_3 = 3
-    lvl_4 = 4
-    lvl_5 = 5
+class CategoryStatus(IntEnum):
+    hidden = 0
+    active = 1
+    not_accessible = 2
 
 
 class Category(Model):
     id = BigIntField(pk=True)
-    user_id = CharField(max_length=100, index=True)
+    user_id = CharField(max_length=100, index=True, null=True)
     parent: ForeignKeyRelation['Category'] = ForeignKeyField('models.Category', on_delete=OnDelete.CASCADE,
                                                              related_name="children", null=True)
     children: ReverseRelation["Category"]  # Связь один ко многим к самому себе (выводим дочерние элементы)
     counterparties: ReverseRelation['Counterparty']
+    data_collects: ReverseRelation['DataCollect']
     name = CharField(max_length=100)
-    status = BooleanField(default=1, null=True)
-    level = IntEnumField(enum_type=CategoryLevel, default=1, null=True, description="Уровень категории расходов")
+    status = IntEnumField(enum_type=CategoryStatus, default=1, null=True)
 
     class Meta:
         table = "categories"
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -42,6 +41,7 @@ class Counterparty(Model):
     class Meta:
         table = "counterparties"
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -53,6 +53,7 @@ class NotifyGroup(Model):
 
     class Meta:
         table = "notification_groups"
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -78,10 +79,11 @@ class Permission(Model):
     class Meta:
         table = "permissions"
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-class WalletNames(str, Enum):
+class WalletName(str, Enum):
     cash = 'Наличные'
     another = 'Другой'
     tinkoff = 'Тинькофф'
@@ -89,10 +91,48 @@ class WalletNames(str, Enum):
     tochka = 'Точка'
 
 
-class Wallet(Model):
+class SupportWallet(Model):
     id = BigIntField(pk=True)
-    user_id = CharField(max_length=100, index=True)
-    name = CharEnumField(enum_type=WalletNames, description='Название')
+    name = CharEnumField(enum_type=WalletName, description='Название')
+    user_wallets: ReverseRelation['UserWallet']
+    data_collects: ReverseRelation['DataCollect']
 
     class Meta:
-        table = "wallets"
+        table = "support_wallets"
+
+
+class UserWallet(Model):
+    id = BigIntField(pk=True)
+    user_id = CharField(max_length=100, index=True)
+    support_wallet: ForeignKeyRelation['SupportWallet'] = ForeignKeyField('models.SupportWallet',
+                                                                          on_delete=OnDelete.RESTRICT,
+                                                                          related_name="user_wallets", null=False)
+
+    class Meta:
+        table = "user_wallets"
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+class DataCollectType(str, Enum):
+    income = "Доход"
+    cost = "Расход"
+
+
+class DataCollect(Model):
+    id = BigIntField(pk=True)
+    transaction_id = BigIntField(generated=True)
+    executor_id = CharField(max_length=100, index=True, null=True)
+    trxn_date = DateField(null=False, index=True)
+    support_wallet: ForeignKeyRelation['SupportWallet'] = ForeignKeyField('models.SupportWallet',
+                                                                          on_delete=OnDelete.RESTRICT,
+                                                                          related_name="data_collects")
+    category: ForeignKeyRelation['Category'] = ForeignKeyField('models.Category',
+                                                               on_delete=OnDelete.SET_NULL,
+                                                               related_name="data_collects", null=True)
+    type = CharEnumField(enum_type=DataCollectType, description='Тип операции')
+    amount = DecimalField(max_digits=19, decimal_places=2)
+
+    class Meta:
+        table = "data_collects"
