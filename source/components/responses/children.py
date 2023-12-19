@@ -4,11 +4,10 @@ from decimal import Decimal
 
 @dataclass
 class DCategory:
-    __slots__ = {"id", "name", "status", "level"}
+    __slots__ = {"id", "name", "status"}
     id: int
     name: str
     status: bool
-    level: int
 
 
 @dataclass

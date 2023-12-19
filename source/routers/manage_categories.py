@@ -59,9 +59,7 @@ async def get_categories(request: GetCategoriesRequest):
     list_categories = []
 
     for category in categories:
-        list_categories.append(
-            DCategory(id=category.id, name=category.name, status=category.status, level=category.level)
-        )
+        list_categories.append(DCategory(id=category.id, name=category.name, status=category.status))
 
     return GetCategoriesResponse(categories=list_categories)
 
