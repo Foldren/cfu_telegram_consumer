@@ -1,13 +1,38 @@
 version: "3.3"
 services:
-  telegram_consumer:
+  bank_consumer:
     build: .
-    image: telegram_consumer
     container_name: telegram_consumer
+    restart: always
     environment:
       - TZ=Europe/Moscow
+    env_file:
+      - ./source/.env
+    depends_on:
+      - telegram_consumer_db
+    networks:
+      - uprav_cfu_network
+
+  telegram_consumer_db:
+    image: postgres:16.1-alpine3.18
+    container_name: telegram_consumer_db
+    restart: always
+    env_file:
+      - ./.env
+    ports:
+      - 39451:5432
+    environment:
+      POSTGRES_USER: ${PG_USERNAME}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB}
+    networks:
+      - uprav_cfu_network
     volumes:
-      - /home/user/.volumes/telegram_consumer/source:/source:rw
-    tty: true
-    working_dir: /source
-    command: ["python", "main.py"]
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
+
+networks:
+  uprav_cfu_network:
+    external: true
