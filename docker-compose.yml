@@ -1,6 +1,6 @@
 version: "3.3"
 services:
-  bank_consumer:
+  telegram_consumer:
     build: .
     container_name: telegram_consumer
     restart: always
@@ -9,13 +9,13 @@ services:
     env_file:
       - ./source/.env
     depends_on:
-      - telegram_consumer_db
+      - telegram_db
     networks:
       - uprav_cfu_network
 
-  telegram_consumer_db:
+  telegram_db:
     image: postgres:16.1-alpine3.18
-    container_name: telegram_consumer_db
+    container_name: telegram_db
     restart: always
     env_file:
       - ./.env
