@@ -7,4 +7,4 @@ async def init_db():
         db_url=POSTGRES_URL,
         modules={'models': ["models"]},
     )
-    # await Tortoise.generate_schemas(safe=True)
+    await Tortoise.generate_schemas(safe=True)
