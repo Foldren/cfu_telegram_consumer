@@ -1,4 +1,4 @@
-FROM python:3.11-alpine
+FROM python:3.11.7-alpine
 WORKDIR /usr/src/app
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade -r requirements.txt

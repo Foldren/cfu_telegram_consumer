@@ -123,7 +123,7 @@ class DataCollectType(str, Enum):
 class DataCollect(Model):
     id = BigIntField(pk=True)
     transaction_id = BigIntField(generated=True)
-    executor_id = CharField(max_length=100, index=True, null=True)
+    executor_id = CharField(max_length=100, index=True, null=True)  # id исполнителя (как legal_entity так и user_id)
     trxn_date = DateField(null=False, index=True)
     support_wallet: ForeignKeyRelation['SupportWallet'] = ForeignKeyField('models.SupportWallet',
                                                                           on_delete=OnDelete.RESTRICT,
