@@ -23,9 +23,7 @@ async def create_category(request: CreateCategoryRequest):
     created_category = await Category.create(
         user_id=request.userID,
         parent_id=request.parentID,
-        name=request.name,
-        level=request.level,
-
+        name=request.name
     )
 
     return CreateCategoryResponse(id=created_category.id)
