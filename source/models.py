@@ -7,7 +7,6 @@ from tortoise.fields import TextField, ForeignKeyField, OnDelete, \
 class CategoryStatus(IntEnum):
     hidden = 0
     active = 1
-    not_accessible = 2
 
 
 class Category(Model):
@@ -32,7 +31,7 @@ class Counterparty(Model):
     id = BigIntField(pk=True)
     user_id = CharField(max_length=100, index=True)
     category: ForeignKeyRelation['Category'] = ForeignKeyField('models.Category',
-                                                               on_delete=OnDelete.SET_NULL,
+                                                               on_delete=OnDelete.CASCADE,
                                                                related_name="counterparties",
                                                                null=True)
     inn = CharField(max_length=12)
@@ -129,7 +128,7 @@ class DataCollect(Model):
                                                                           on_delete=OnDelete.RESTRICT,
                                                                           related_name="data_collects")
     category: ForeignKeyRelation['Category'] = ForeignKeyField('models.Category',
-                                                               on_delete=OnDelete.SET_NULL,
+                                                               on_delete=OnDelete.CASCADE,
                                                                related_name="data_collects", null=True)
     type = CharEnumField(enum_type=DataCollectType, description='Тип операции')
     amount = DecimalField(max_digits=19, decimal_places=2)
