@@ -11,7 +11,7 @@ class CreateCounterpartyRequest:
 
 
 @dataclass
-class UpdateCounterPartyRequest:
+class UpdateCounterpartyRequest:
     counterpartyID: int
     userID: str
     categoryID: int = None
