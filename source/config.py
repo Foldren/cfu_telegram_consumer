@@ -1,15 +1,13 @@
-from os import getenv
-from pathlib import Path
+from os import environ, getcwd
 from dotenv import load_dotenv
 
-load_dotenv()
 
-IS_THIS_LOCAL = "Pycharm" in str(Path.cwd())
-TELEGRAM_QUEUE = "test_queue" if IS_THIS_LOCAL else "telegram_queue"
-POSTGRES_URL = getenv('POSTGRES_URL')
-RABBITMQ_URL = getenv('RABBITMQ_URL')
+IS_THIS_LOCAL = "Pycharm" in str(getcwd()); load_dotenv() if IS_THIS_LOCAL else None
+TELEGRAM_QUEUE = "telegram_queue"
+POSTGRES_URL = environ['POSTGRES_URL']
+RABBITMQ_URL = environ['RABBITMQ_URL']
 AERICH_CONFIG = {
-    "connections": {"default": getenv('POSTGRES_URL')},
+    "connections": {"default": environ['POSTGRES_URL']},
     "apps": {
         "models": {
             "models": ["source.models", "aerich.models"],

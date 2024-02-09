@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from components.responses.children import DCategory, DExpensesResponse, DCashBalanceOnHandResponse
+from components.responses.children import DCategory, DExpensesResponse, DCashBalanceOnHandResponse, DLowerCategory
 
 
 @dataclass
@@ -24,6 +24,12 @@ class DeleteCategoriesResponse:
 class GetCategoriesResponse:
     __slots__ = {"categories"}
     categories: list[DCategory]
+
+
+@dataclass
+class GetLowerCategoriesResponse:
+    __slots__ = {"categories"}
+    categories: list[DLowerCategory]
 
 
 @dataclass

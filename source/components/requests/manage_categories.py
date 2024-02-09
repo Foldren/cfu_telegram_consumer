@@ -47,6 +47,11 @@ class GetCategoriesRequest:
     parentID: int = None
 
 
+@dataclass
+class GetLowerCategoriesRequest:
+    userID: str
+
+
 
 
 

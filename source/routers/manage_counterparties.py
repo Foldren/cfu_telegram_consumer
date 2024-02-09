@@ -1,6 +1,6 @@
 from faststream.rabbit import RabbitRouter
 from components.requests.manage_counterparties import CreateCounterpartyRequest, DeleteCounterpartiesRequest, \
-    GetCounterpartiesRequest, UpdateCounterPartyRequest
+    GetCounterpartiesRequest, UpdateCounterpartyRequest
 from components.responses.children import DCounterparty
 from components.responses.manage_counterparties import CreateCounterpartyResponse, DeleteCounterpartiesResponse, \
     GetCounterpartiesResponse, UpdateCounterpartyResponse
@@ -25,8 +25,8 @@ async def create_counterparty(request: CreateCounterpartyRequest):
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.update-counterparty",
-          request=UpdateCounterPartyRequest)
-async def update_category(request: UpdateCounterPartyRequest):
+          request=UpdateCounterpartyRequest)
+async def update_category(request: UpdateCounterpartyRequest):
     counterparty = await Counterparty.filter(id=request.counterpartyID, user_id=request.userID).first()
 
     if request.name:

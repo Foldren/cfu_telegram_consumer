@@ -11,6 +11,14 @@ class DCategory:
 
 
 @dataclass
+class DLowerCategory:
+    __slots__ = {"id", "name", "queue"}
+    id: int
+    name: str
+    queue: list[str]
+
+
+@dataclass
 class DCounterparty:
     __slots__ = {"id", "name", "inn", "categoryID", "categoryName"}
     id: int
