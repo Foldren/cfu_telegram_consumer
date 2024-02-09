@@ -11,6 +11,15 @@ class CreateCounterpartyRequest:
 
 
 @dataclass
+class UpdateCounterPartyRequest:
+    counterpartyID: int
+    userID: str
+    categoryID: int = None
+    name: str = None
+    inn: int = None
+
+
+@dataclass
 class DeleteCounterpartiesRequest:
     __slots__ = {"counterpartiesID", "userID"}
     counterpartiesID: list[int]

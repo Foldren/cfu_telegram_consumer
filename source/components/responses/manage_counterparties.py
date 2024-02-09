@@ -9,6 +9,12 @@ class CreateCounterpartyResponse:
 
 
 @dataclass
+class UpdateCounterpartyResponse:
+    __slots__ = {"id"}
+    id: int
+
+
+@dataclass
 class DeleteCounterpartiesResponse:
     __slots__ = {"counterpartiesID"}
     counterpartiesID: list[int]
