@@ -1,10 +1,10 @@
 from faststream.rabbit import RabbitRouter
 from money import Money
 from components.requests.manage_categories import CreateCategoryRequest, UpdateCategoryRequest, DeleteCategoriesRequest, \
-    GetCategoriesRequest, CashBalancesOnHandRequest, GetLowerCategoriesRequest
-from components.responses.children import DCategory, DBalanceResponse, DCashBalanceOnHandResponse, DLowerCategory
+    GetCategoriesRequest, CashBalancesOnHandRequest
+from components.responses.children import DCategory, DBalanceResponse, DCashBalanceOnHandResponse
 from components.responses.manage_categories import CreateCategoryResponse, UpdateCategoryResponse, \
-    DeleteCategoriesResponse, GetCategoriesResponse, CashBalancesOnHandResponse, GetLowerCategoriesResponse
+    DeleteCategoriesResponse, GetCategoriesResponse, CashBalancesOnHandResponse
 from decorators import consumer
 from models import Category, DataCollect
 from queues import telegram_queue
@@ -52,7 +52,7 @@ async def update_category(request: UpdateCategoryRequest):
 
     if request.name:
         category.name = request.name
-    if request.status:
+    if request.status is not None:
         category.status = request.status
 
     await category.save()
@@ -73,55 +73,62 @@ async def get_categories(request: GetCategoriesRequest):
     categories = await Category.filter(user_id=request.userID, parent_id=request.parentID).all()
     list_categories = []
 
+    categories_id = [c.id for c in categories]
+    child_categories = await Category.filter(user_id=request.userID, parent_id__in=categories_id).all()
+    categories_with_child_id = [c.parent_id for c in child_categories]
+
     for category in categories:
-        list_categories.append(DCategory(id=category.id, name=category.name, status=category.status))
+        list_categories.append(DCategory(id=category.id,
+                                         name=category.name,
+                                         status=category.status,
+                                         hasChildren=category.id in categories_with_child_id))
 
     return GetCategoriesResponse(categories=list_categories)
 
 
-@consumer(router=router, queue=telegram_queue, pattern="telegram.get-lower-categories",
-          request=GetLowerCategoriesRequest)
-async def get_lower_categories(request: GetLowerCategoriesRequest):
-    categories = await Category.filter(user_id=request.userID).select_related(
-        "parent",
-        "parent__parent",
-        "parent__parent__parent",
-        "parent__parent__parent__parent",
-        "parent__parent__parent__parent__parent").all()
-
-    categories.sort(key=lambda c: c.id)
-
-    # Генерируем очереди для категорий
-    categories_with_q = []
-    for category in categories:
-        category_with_q = {"id": category.id, "name": category.name, "queue": []}
-        parent = category.parent
-
-        while parent is not None:
-            category_with_q["queue"].append(parent.name)
-            parent = parent.parent if (parent is not None) else None
-
-        category_with_q["queue"].reverse()
-
-        categories_with_q.append(category_with_q)
-
-    # Оставляем только низшие
-    lower_categories = []
-    for i, category in enumerate(categories_with_q):
-        is_lower = True
-        for category_2 in categories_with_q:
-            if category['name'] in category_2['queue']:
-                is_lower = False
-                break
-
-        if is_lower:
-            lower_categories.append(category)
-
-    res_categories = []
-    for category in lower_categories:
-        res_categories.append(DLowerCategory(id=category["id"], name=category["name"], queue=category['queue']))
-
-    return GetLowerCategoriesResponse(categories=res_categories)
+# @consumer(router=router, queue=telegram_queue, pattern="telegram.get-lower-categories",
+#           request=GetLowerCategoriesRequest)
+# async def get_lower_categories(request: GetLowerCategoriesRequest):
+#     categories = await Category.filter(user_id=request.userID).select_related(
+#         "parent",
+#         "parent__parent",
+#         "parent__parent__parent",
+#         "parent__parent__parent__parent",
+#         "parent__parent__parent__parent__parent").all()
+#
+#     categories.sort(key=lambda c: c.id)
+#
+#     # Генерируем очереди для категорий
+#     categories_with_q = []
+#     for category in categories:
+#         category_with_q = {"id": category.id, "name": category.name, "queue": []}
+#         parent = category.parent
+#
+#         while parent is not None:
+#             category_with_q["queue"].append(parent.name)
+#             parent = parent.parent if (parent is not None) else None
+#
+#         category_with_q["queue"].reverse()
+#
+#         categories_with_q.append(category_with_q)
+#
+#     # Оставляем только низшие
+#     lower_categories = []
+#     for i, category in enumerate(categories_with_q):
+#         is_lower = True
+#         for category_2 in categories_with_q:
+#             if category['name'] in category_2['queue']:
+#                 is_lower = False
+#                 break
+#
+#         if is_lower:
+#             lower_categories.append(category)
+#
+#     res_categories = []
+#     for category in lower_categories:
+#         res_categories.append(DLowerCategory(id=category["id"], name=category["name"], queue=category['queue']))
+#
+#     return GetLowerCategoriesResponse(categories=res_categories)
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.get-user-expenses")
@@ -135,9 +142,9 @@ async def get_user_cash_balances_on_hand(request: CashBalancesOnHandRequest):
     users_id = request.usersID
     legal_entities_id = request.legalEntitiesID
 
-    users_dc: list[DataCollect] = await DataCollect\
-        .filter(executor_id__in=users_id, support_wallet_id=1)\
-        .order_by("executor_id")\
+    users_dc: list[DataCollect] = await DataCollect \
+        .filter(executor_id__in=users_id, support_wallet_id=1) \
+        .order_by("executor_id") \
         .all()
 
     legal_entities_dc: list[DataCollect] = await DataCollect \
