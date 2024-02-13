@@ -46,7 +46,7 @@ class NotifyGroup(Model):
     id = BigIntField(pk=True)
     user_id = CharField(max_length=100, index=True)
     chat_id = CharField(max_length=20, unique=True)
-    name = TextField(maxlength=300)
+    name2 = TextField(maxlength=300)
 
     class Meta:
         table = "notification_groups"
