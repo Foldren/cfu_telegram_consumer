@@ -19,23 +19,24 @@ router = RabbitRouter()
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.create-category", request=CreateCategoryRequest)
 async def create_category(request: CreateCategoryRequest):
-    category = await Category.filter(id=request.parentID, user_id=request.userID).select_related(
-        "parent",
-        "parent__parent",
-        "parent__parent__parent",
-        "parent__parent__parent__parent",
-        "parent__parent__parent__parent__parent").first()
+    if request.parentID is not None:
+        category = await Category.filter(id=request.parentID, user_id=request.userID).select_related(
+            "parent",
+            "parent__parent",
+            "parent__parent__parent",
+            "parent__parent__parent__parent",
+            "parent__parent__parent__parent__parent").first()
 
-    parent = category.parent
-    list_parents = [parent]
+        parent = category.parent
+        list_parents = [parent]
 
-    # Проверяем уровень вложенности очереди
-    while parent is not None:
-        parent = parent.parent if (parent is not None) else None
-        list_parents.append(parent)
+        # Проверяем уровень вложенности очереди
+        while parent is not None:
+            parent = parent.parent if (parent is not None) else None
+            list_parents.append(parent)
 
-    if len(list_parents) >= 5:
-        raise Exception("У категории максимальный уровень 5!")
+        if len(list_parents) >= 5:
+            raise Exception("У категории максимальный уровень 5!")
 
     created_category = await Category.create(
         user_id=request.userID,
