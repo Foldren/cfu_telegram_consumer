@@ -26,7 +26,7 @@ async def create_counterparty(request: CreateCounterpartyRequest):
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.update-counterparty",
           request=UpdateCounterpartyRequest)
-async def update_category(request: UpdateCounterpartyRequest):
+async def update_counterparty(request: UpdateCounterpartyRequest):
     counterparty = await Counterparty.filter(id=request.counterpartyID, user_id=request.userID).first()
 
     if request.name:
@@ -62,7 +62,7 @@ async def get_counterparties(request: GetCounterpartiesRequest):
                           inn=counterparty.inn,
                           categoryID=counterparty.category.id,
                           categoryName=counterparty.category.name,
-                          )
+            )
         )
 
     return GetCounterpartiesResponse(counterparties=list_counterparties)
