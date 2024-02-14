@@ -66,7 +66,7 @@ async def delete_categories(request: DeleteCategoriesRequest):
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.get-categories", request=GetCategoriesRequest)
 async def get_categories(request: GetCategoriesRequest):
-    categories = await Category.filter(user_id=request.userID, parent_id=request.parentID).all()
+    categories = await Category.filter(user_id=request.userID, parent_id=request.parentID, status__in=[0, 1]).all()
     list_categories = []
 
     categories_id = [c.id for c in categories]

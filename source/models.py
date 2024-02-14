@@ -7,6 +7,7 @@ from tortoise.fields import TextField, ForeignKeyField, OnDelete, \
 class CategoryStatus(IntEnum):
     hidden = 0
     active = 1
+    service = 2
 
 
 class Category(Model):
