@@ -65,6 +65,4 @@ async def get_counterparties(request: GetCounterpartiesRequest):
             )
         )
 
-    print(GetCounterpartiesResponse(counterparties=list_counterparties))
-
     return GetCounterpartiesResponse(counterparties=list_counterparties)

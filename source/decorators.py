@@ -1,3 +1,4 @@
+from traceback import print_exc
 from typing import Any
 from faststream import Context
 from faststream.rabbit import RabbitQueue, RabbitRouter
@@ -15,6 +16,7 @@ def consumer(router: RabbitRouter, queue: RabbitQueue, pattern: str, request: An
                 else:
                     response.data = await func()
             except Exception as e:
+                print_exc()
                 response.error = RpcError(message=str(e))
                 response.data = None
 
