@@ -55,6 +55,8 @@ async def get_counterparties(request: GetCounterpartiesRequest):
     counterparties = await Counterparty.filter(user_id=request.userID).select_related("category").all()
     list_counterparties = []
 
+    print(counterparties)
+
     if counterparties:
         for counterparty in counterparties:
             list_counterparties.append(
