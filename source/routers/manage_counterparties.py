@@ -62,7 +62,7 @@ async def get_counterparties(request: GetCounterpartiesRequest):
                           inn=counterparty.inn,
                           categoryID=counterparty.category.id,
                           categoryName=counterparty.category.name,
-            )
+                          )
         )
 
     return GetCounterpartiesResponse(counterparties=list_counterparties)

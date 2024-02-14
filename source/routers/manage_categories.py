@@ -12,11 +12,6 @@ from queues import telegram_queue
 router = RabbitRouter()
 
 
-# @router.subscriber(queue=telegram_queue)
-# async def purge_messages():
-#     pass
-
-
 @consumer(router=router, queue=telegram_queue, pattern="telegram.create-category", request=CreateCategoryRequest)
 async def create_category(request: CreateCategoryRequest):
     if request.parentID is not None:
