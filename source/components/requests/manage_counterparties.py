@@ -6,7 +6,7 @@ class CreateCounterpartyRequest:
     __slots__ = {"userID", "name", "inn", "categoryID"}
     userID: str
     name: str
-    inn: int
+    inn: str
     categoryID: int
 
 
