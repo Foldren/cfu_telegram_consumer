@@ -10,7 +10,7 @@ TORTOISE_CONFIG = {
     "connections": {"default": environ['CFU_TEL_CON_PG_URL']},
     "apps": {
         "models": {
-            "models": ["models", "aerich.models"],
+            "models": ["source.models", "aerich.models"],
             "default_connection": "default"
         }
     }

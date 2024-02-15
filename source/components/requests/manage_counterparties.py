@@ -16,7 +16,7 @@ class UpdateCounterpartyRequest:
     userID: str
     categoryID: int = None
     name: str = None
-    inn: int = None
+    inn: str = None
 
 
 @dataclass
