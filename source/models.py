@@ -24,6 +24,7 @@ class Category(Model):
     class Meta:
         table = "categories"
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -40,6 +41,7 @@ class Counterparty(Model):
     class Meta:
         table = "counterparties"
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -47,10 +49,11 @@ class NotifyGroup(Model):
     id = BigIntField(pk=True)
     user_id = CharField(max_length=100, index=True)
     chat_id = CharField(max_length=20, unique=True)
-    name2 = TextField(maxlength=300)
+    name = TextField(maxlength=300)
 
     class Meta:
         table = "notification_groups"
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -76,6 +79,7 @@ class Permission(Model):
     class Meta:
         table = "permissions"
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -96,6 +100,7 @@ class SupportWallet(Model):
     class Meta:
         table = "support_wallets"
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -109,6 +114,7 @@ class UserWallet(Model):
     class Meta:
         table = "user_wallets"
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 
@@ -119,17 +125,27 @@ class DataCollectType(str, Enum):
 
 class DataCollect(Model):
     id = BigIntField(pk=True)
-    transaction_id = BigIntField(generated=True)
+    transaction: ForeignKeyRelation['Transaction'] = ForeignKeyField('models.Transaction',
+                                                                        on_delete=OnDelete.CASCADE,
+                                                                        related_name="data_collects")
     executor_id = CharField(max_length=100, index=True, null=True)  # id исполнителя (как legal_entity так и user_id)
-    trxn_date = DateField(null=False, index=True)
     support_wallet: ForeignKeyRelation['SupportWallet'] = ForeignKeyField('models.SupportWallet',
                                                                           on_delete=OnDelete.RESTRICT,
                                                                           related_name="data_collects")
     category: ForeignKeyRelation['Category'] = ForeignKeyField('models.Category',
                                                                on_delete=OnDelete.CASCADE,
-                                                               related_name="data_collects", null=True)
+                                                               related_name="data_collects")
     type = CharEnumField(enum_type=DataCollectType, description='Тип операции')
     amount = DecimalField(max_digits=19, decimal_places=2)
 
     class Meta:
         table = "data_collects"
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+class Transaction(Model):
+    id = BigIntField(pk=True)
+    date = DateField(index=True)
+    data_collects: ReverseRelation['DataCollect']

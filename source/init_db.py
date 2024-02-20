@@ -1,11 +1,18 @@
+from datetime import datetime
 from tortoise import Tortoise
 from config import TORTOISE_CONFIG
 from models import Category
+from aerich import Command
 
 
 async def init_db():
     await Tortoise.init(TORTOISE_CONFIG)
     await Tortoise.generate_schemas(safe=True)
+
+    if datetime(2024, 2, 20) == datetime.today():
+        command = Command(tortoise_config=TORTOISE_CONFIG, app='models', location="./migrations")
+        await command.init()
+        await command.upgrade(True)
 
     service_categories = await Category.filter(status=2).all()
 
@@ -19,3 +26,4 @@ async def init_db():
         ]
 
         await Category.bulk_create(service_categories_list)
+
