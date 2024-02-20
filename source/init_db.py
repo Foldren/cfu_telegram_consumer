@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from tortoise import Tortoise
 from config import TORTOISE_CONFIG
 from models import Category
@@ -9,7 +9,7 @@ async def init_db():
     await Tortoise.init(TORTOISE_CONFIG)
     await Tortoise.generate_schemas(safe=True)
 
-    if datetime(2024, 2, 20) == datetime.today():
+    if date(2024, 2, 20) == date.today():
         command = Command(tortoise_config=TORTOISE_CONFIG, app='models', location="./migrations")
         await command.init()
         await command.upgrade(True)
