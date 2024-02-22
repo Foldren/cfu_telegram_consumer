@@ -1,7 +1,7 @@
 from datetime import date
 from tortoise import Tortoise
 from config import TORTOISE_CONFIG
-from models import Category
+from models import Category, SupportWallet
 from aerich import Command
 
 
@@ -14,16 +14,14 @@ async def init_db():
         await command.init()
         await command.upgrade(True)
 
-    service_categories = await Category.filter(status=2).all()
+    support_wallets = await SupportWallet.all()
 
-    if not service_categories:
-        service_categories_list = [
-            Category(name="Перевод", status=2),
-            Category(name="Выдача под отчет", status=2),
-            Category(name="Получение под отчет", status=2),
-            Category(name="Возврат подотчётных средств", status=2),
-            Category(name="Получение подотчётных средств", status=2),
+    if not support_wallets:
+        support_wallets_obj = [
+            SupportWallet(name='Наличные'),
+            SupportWallet(name='Другой'),
+            SupportWallet(name='Тинькофф'),
+            SupportWallet(name='Модуль'),
+            SupportWallet(name='Точка')
         ]
-
-        await Category.bulk_create(service_categories_list)
-
+        await SupportWallet.bulk_create(support_wallets_obj, ignore_conflicts=True)

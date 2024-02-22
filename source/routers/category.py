@@ -1,10 +1,11 @@
 from faststream.rabbit import RabbitRouter
 from money import Money
-from components.requests.manage_categories import CreateCategoryRequest, UpdateCategoryRequest, DeleteCategoriesRequest, \
+from components.requests.category import CreateCategoryRequest, UpdateCategoryRequest, DeleteCategoriesRequest, \
     GetCategoriesRequest, CashBalancesOnHandRequest
-from components.responses.children import DCategory, DBalanceResponse, DCashBalanceOnHandResponse
-from components.responses.manage_categories import CreateCategoryResponse, UpdateCategoryResponse, \
+from components.responses.children import CCategory, CBalanceResponse, CCashBalanceOnHandResponse
+from components.responses.category import CreateCategoryResponse, UpdateCategoryResponse, \
     DeleteCategoriesResponse, GetCategoriesResponse, CashBalancesOnHandResponse
+from config import SERVICE_CATEGORIES
 from decorators import consumer
 from models import Category, DataCollect
 from queues import telegram_queue
@@ -59,6 +60,12 @@ async def update_category(request: UpdateCategoryRequest):
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.delete-categories", request=DeleteCategoriesRequest)
 async def delete_categories(request: DeleteCategoriesRequest):
+    categories = await Category.filter(id__in=request.categoriesID, user_id=request.userID)
+
+    for category in categories:
+        if category.status == 2:
+            raise Exception("Нельзя удалить сервисные категории.")
+
     await Category.filter(id__in=request.categoriesID, user_id=request.userID).delete()
 
     return DeleteCategoriesResponse(categoriesID=request.categoriesID)
@@ -66,7 +73,20 @@ async def delete_categories(request: DeleteCategoriesRequest):
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.get-categories", request=GetCategoriesRequest)
 async def get_categories(request: GetCategoriesRequest):
-    categories = await Category.filter(user_id=request.userID, parent_id=request.parentID, status__in=[0, 1]).all()
+    # Если включены сервисные категории то проверяем есть ли они, если нет, создаем для пользователя
+    if request.includeService:
+        stasuses = [0, 1, 2]
+        service_categories = await Category.filter(user_id=request.userID, status=2).all()
+
+        if not service_categories:
+            service_categories_obj = []
+            for sc in SERVICE_CATEGORIES:
+                service_categories_obj.append(Category(user_id=request.userID, status=2, name=sc))
+            await Category.bulk_create(service_categories_obj, ignore_conflicts=True)
+    else:
+        stasuses = [0, 1]
+
+    categories = await Category.filter(user_id=request.userID, parent_id=request.parentID, status__in=stasuses).all()
     list_categories = []
 
     categories_id = [c.id for c in categories]
@@ -74,7 +94,7 @@ async def get_categories(request: GetCategoriesRequest):
     categories_with_child_id = [c.parent_id for c in child_categories]
 
     for category in categories:
-        list_categories.append(DCategory(id=category.id,
+        list_categories.append(CCategory(id=category.id,
                                          name=category.name,
                                          status=category.status,
                                          hasChildren=category.id in categories_with_child_id))
@@ -160,7 +180,7 @@ async def get_user_cash_balances_on_hand(request: CashBalancesOnHandRequest):
     cash_balances_response = []
     for key, value in cash_balances.items():
         cash_balances_response.append(
-            DCashBalanceOnHandResponse(userID=key, balance=DBalanceResponse(value.amount, "RUB"))
+            CCashBalanceOnHandResponse(userID=key, balance=CBalanceResponse(value.amount, "RUB"))
         )
 
     return CashBalancesOnHandResponse(cashBalancesOnHand=cash_balances_response)

@@ -1,8 +1,8 @@
 from faststream.rabbit import RabbitRouter
-from components.requests.manage_counterparties import CreateCounterpartyRequest, DeleteCounterpartiesRequest, \
+from components.requests.counterparty import CreateCounterpartyRequest, DeleteCounterpartiesRequest, \
     GetCounterpartiesRequest, UpdateCounterpartyRequest
-from components.responses.children import DCounterparty
-from components.responses.manage_counterparties import CreateCounterpartyResponse, DeleteCounterpartiesResponse, \
+from components.responses.children import CCounterparty
+from components.responses.counterparty import CreateCounterpartyResponse, DeleteCounterpartiesResponse, \
     GetCounterpartiesResponse, UpdateCounterpartyResponse
 from decorators import consumer
 from models import Counterparty
@@ -57,7 +57,7 @@ async def get_counterparties(request: GetCounterpartiesRequest):
 
     for counterparty in counterparties:
         list_counterparties.append(
-            DCounterparty(id=counterparty.id,
+            CCounterparty(id=counterparty.id,
                           name=counterparty.name,
                           inn=counterparty.inn,
                           categoryID=counterparty.category.id,

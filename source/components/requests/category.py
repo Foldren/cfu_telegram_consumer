@@ -45,6 +45,7 @@ class DeleteCategoriesRequest:
 class GetCategoriesRequest:
     userID: str
     parentID: int = None
+    includeService: bool = False
 
 
 @dataclass

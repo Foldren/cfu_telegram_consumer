@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from components.responses.children import DCounterparty
+from components.responses.children import CCounterparty
 
 
 @dataclass
@@ -23,7 +23,7 @@ class DeleteCounterpartiesResponse:
 @dataclass
 class GetCounterpartiesResponse:
     __slots__ = {"counterparties"}
-    counterparties: list[DCounterparty]
+    counterparties: list[CCounterparty]
 
 
 

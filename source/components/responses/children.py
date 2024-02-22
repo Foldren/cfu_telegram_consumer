@@ -3,7 +3,7 @@ from decimal import Decimal
 
 
 @dataclass
-class DCategory:
+class CCategory:
     __slots__ = {"id", "name", "status", "hasChildren"}
     id: int
     name: str
@@ -12,15 +12,7 @@ class DCategory:
 
 
 @dataclass
-class DLowerCategory:
-    __slots__ = {"id", "name", "queue"}
-    id: int
-    name: str
-    queue: list[str]
-
-
-@dataclass
-class DCounterparty:
+class CCounterparty:
     __slots__ = {"id", "name", "inn", "categoryID", "categoryName"}
     id: int
     name: str
@@ -30,21 +22,30 @@ class DCounterparty:
 
 
 @dataclass
-class DBalanceResponse:
+class CBalanceResponse:
     __slots__ = {"balance", "currency"}
     balance: Decimal
     currency: str
 
 
 @dataclass
-class DExpensesResponse:
+class CExpensesResponse:
     __slots__ = {"cash", "nonCash"}
-    cash: DBalanceResponse
-    nonCash: DBalanceResponse
+    cash: CBalanceResponse
+    nonCash: CBalanceResponse
 
 
 @dataclass
-class DCashBalanceOnHandResponse:
+class CCashBalanceOnHandResponse:
     __slots__ = {"userID", "balance"}
     userID: str
-    balance: DBalanceResponse
+    balance: CBalanceResponse
+
+
+@dataclass
+class CDataCollectResponse:
+    __slots__ = {"legalEntity", "categoryName", "amount", "type"}
+    legalEntity: str
+    categoryName: str
+    amount: Decimal
+    type: str

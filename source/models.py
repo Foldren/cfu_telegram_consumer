@@ -126,8 +126,8 @@ class DataCollectType(str, Enum):
 class DataCollect(Model):
     id = BigIntField(pk=True)
     transaction: ForeignKeyRelation['Transaction'] = ForeignKeyField('models.Transaction',
-                                                                        on_delete=OnDelete.CASCADE,
-                                                                        related_name="data_collects")
+                                                                     on_delete=OnDelete.CASCADE,
+                                                                     related_name="data_collects")
     executor_id = CharField(max_length=100, index=True, null=True)  # id исполнителя (как legal_entity так и user_id)
     support_wallet: ForeignKeyRelation['SupportWallet'] = ForeignKeyField('models.SupportWallet',
                                                                           on_delete=OnDelete.RESTRICT,
