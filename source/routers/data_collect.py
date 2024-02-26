@@ -11,13 +11,12 @@ from queues import telegram_queue
 router = RabbitRouter()
 
 
-@consumer(router=router, queue=telegram_queue, pattern="telegram.get-data-collects",
-          request=GetDataCollectsRequest)
+@consumer(router=router, queue=telegram_queue, pattern="telegram.get-data-collects", request=GetDataCollectsRequest)
 async def get_data_collects(request: GetDataCollectsRequest):
     start_date = datetime.strptime(request.dateFrom, "%Y-%m-%d")
     end_date = datetime.strptime(request.dateTo, "%Y-%m-%d")
 
-    expr = (Q(executor_id__in=request.legalEntities) &
+    expr = (Q(executor_id__in=request.legalEntitiesID) &
             Q(category__user_id=request.userID) &
             Q(transaction__date__range=[start_date, end_date])
             )

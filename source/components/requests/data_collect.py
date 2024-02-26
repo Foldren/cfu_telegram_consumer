@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class GetDataCollectsRequest:
-    __slots__ = {"userID", "legalEntities", "dateFrom", "dateTo"}
+    __slots__ = {"userID", "legalEntitiesID", "dateFrom", "dateTo"}
     userID: str
-    legalEntities: list[str]
+    legalEntitiesID: list[str]
     dateFrom: str
     dateTo: str
