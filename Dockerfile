@@ -1,6 +1,6 @@
-FROM python:3.11.7-alpine
+FROM python:3.12-alpine
 WORKDIR /usr/src/app
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 COPY ./source .
 CMD ["python", "main.py"]
