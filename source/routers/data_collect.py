@@ -21,11 +21,12 @@ async def get_data_collects(request: GetDataCollectsRequest):
             Q(transaction__date__range=[start_date, end_date])
             )
 
-    data_collects = await DataCollect.filter(expr).select_related("category")
+    data_collects = await DataCollect.filter(expr).select_related("category", "transaction")
 
     list_data_collects = []
     for dc in data_collects:
-        list_data_collects.append(CDataCollectResponse(legalEntity=dc.executor_id, categoryName=dc.category.name,
-                                                       amount=dc.amount, type=dc.type))
+        dc_date = dc.transaction.date.strftime("%Y-%m-%d")
+        list_data_collects.append(CDataCollectResponse(legalEntityID=dc.executor_id, categoryName=dc.category.name,
+                                                       amount=dc.amount, type=dc.type, date=dc_date))
 
     return GetDataCollectsResponse(data_collects=list_data_collects)

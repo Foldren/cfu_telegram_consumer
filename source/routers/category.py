@@ -47,6 +47,9 @@ async def create_category(request: CreateCategoryRequest):
 async def update_category(request: UpdateCategoryRequest):
     category = await Category.filter(id=request.categoryID, user_id=request.userID).first()
 
+    if category.status == 2:
+        raise Exception("Нельзя редактировать сервисные категории.")
+
     if request.name:
         category.name = request.name
     if request.status is not None:
