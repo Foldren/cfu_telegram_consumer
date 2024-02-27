@@ -5,7 +5,7 @@ from components.requests.category import CreateCategoryRequest, UpdateCategoryRe
 from components.responses.children import CCategory, CBalanceResponse, CCashBalanceOnHandResponse
 from components.responses.category import CreateCategoryResponse, UpdateCategoryResponse, \
     DeleteCategoriesResponse, GetCategoriesResponse, CashBalancesOnHandResponse
-from config import SERVICE_CATEGORIES
+from config import SERVICE_CATEGORIES, STATIC_CATEGORIES
 from decorators import consumer
 from models import Category, DataCollect
 from queues import telegram_queue
@@ -47,8 +47,8 @@ async def create_category(request: CreateCategoryRequest):
 async def update_category(request: UpdateCategoryRequest):
     category = await Category.filter(id=request.categoryID, user_id=request.userID).first()
 
-    if category.status == 2:
-        raise Exception("Нельзя редактировать сервисные категории.")
+    if category.status in [2, 3]:
+        raise Exception("Нельзя редактировать сервисные и статические категории.")
 
     if request.name:
         category.name = request.name
@@ -66,8 +66,8 @@ async def delete_categories(request: DeleteCategoriesRequest):
     categories = await Category.filter(id__in=request.categoriesID, user_id=request.userID)
 
     for category in categories:
-        if category.status == 2:
-            raise Exception("Нельзя удалить сервисные категории.")
+        if category.status in [2, 3]:
+            raise Exception("Нельзя удалить сервисные или статические категории.")
 
     await Category.filter(id__in=request.categoriesID, user_id=request.userID).delete()
 
@@ -77,14 +77,18 @@ async def delete_categories(request: DeleteCategoriesRequest):
 @consumer(router=router, queue=telegram_queue, pattern="telegram.get-categories", request=GetCategoriesRequest)
 async def get_categories(request: GetCategoriesRequest):
     # Если включены сервисные категории то проверяем есть ли они, если нет, создаем для пользователя
-    if request.includeService:
-        stasuses = [0, 1, 2]
+    if request.includeStatic:
+        stasuses = [0, 1, 3]
         service_categories = await Category.filter(user_id=request.userID, status=2).all()
 
         if not service_categories:
             service_categories_obj = []
+
             for sc in SERVICE_CATEGORIES:
                 service_categories_obj.append(Category(user_id=request.userID, status=2, name=sc))
+            for sc in STATIC_CATEGORIES:
+                service_categories_obj.append(Category(user_id=request.userID, status=3, name=sc))
+
             await Category.bulk_create(service_categories_obj, ignore_conflicts=True)
     else:
         stasuses = [0, 1]

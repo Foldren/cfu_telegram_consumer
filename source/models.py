@@ -8,6 +8,7 @@ class CategoryStatus(IntEnum):
     hidden = 0
     active = 1
     service = 2
+    static = 3
 
 
 class Category(Model):
