@@ -5,7 +5,7 @@ from components.responses.children import CCounterparty
 from components.responses.counterparty import CreateCounterpartyResponse, DeleteCounterpartiesResponse, \
     GetCounterpartiesResponse, UpdateCounterpartyResponse
 from decorators import consumer
-from models import Counterparty
+from db_models.telegram import Counterparty
 from queues import telegram_queue
 
 router = RabbitRouter()

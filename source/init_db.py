@@ -1,8 +1,6 @@
-from datetime import date
 from tortoise import Tortoise
 from config import TORTOISE_CONFIG
-from models import SupportWallet
-from aerich import Command
+from db_models.telegram import SupportWallet
 
 
 async def init_db():

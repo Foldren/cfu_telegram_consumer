@@ -5,9 +5,9 @@ from components.requests.category import CreateCategoryRequest, UpdateCategoryRe
 from components.responses.children import CCategory, CBalanceResponse, CCashBalanceOnHandResponse
 from components.responses.category import CreateCategoryResponse, UpdateCategoryResponse, \
     DeleteCategoriesResponse, GetCategoriesResponse, CashBalancesOnHandResponse
-from config import SERVICE_CATEGORIES, STATIC_CATEGORIES
+from config import STATIC_CATEGORIES
 from decorators import consumer
-from models import Category, DataCollect
+from db_models.telegram import Category, DataCollect
 from queues import telegram_queue
 
 router = RabbitRouter()
@@ -84,8 +84,8 @@ async def get_categories(request: GetCategoriesRequest):
         if not service_categories:
             service_categories_obj = []
 
-            for sc in SERVICE_CATEGORIES:
-                service_categories_obj.append(Category(user_id=request.userID, status=2, name=sc))
+            # for sc in SERVICE_CATEGORIES:
+            #     service_categories_obj.append(Category(user_id=request.userID, status=2, name=sc))
             for sc in STATIC_CATEGORIES:
                 service_categories_obj.append(Category(user_id=request.userID, status=3, name=sc))
 
@@ -107,51 +107,6 @@ async def get_categories(request: GetCategoriesRequest):
                                          hasChildren=category.id in categories_with_child_id))
 
     return GetCategoriesResponse(categories=list_categories)
-
-
-# @consumer(router=router, queue=telegram_queue, pattern="telegram.get-lower-categories",
-#           request=GetLowerCategoriesRequest)
-# async def get_lower_categories(request: GetLowerCategoriesRequest):
-#     categories = await Category.filter(user_id=request.userID).select_related(
-#         "parent",
-#         "parent__parent",
-#         "parent__parent__parent",
-#         "parent__parent__parent__parent",
-#         "parent__parent__parent__parent__parent").all()
-#
-#     categories.sort(key=lambda c: c.id)
-#
-#     # Генерируем очереди для категорий
-#     categories_with_q = []
-#     for category in categories:
-#         category_with_q = {"id": category.id, "name": category.name, "queue": []}
-#         parent = category.parent
-#
-#         while parent is not None:
-#             category_with_q["queue"].append(parent.name)
-#             parent = parent.parent if (parent is not None) else None
-#
-#         category_with_q["queue"].reverse()
-#
-#         categories_with_q.append(category_with_q)
-#
-#     # Оставляем только низшие
-#     lower_categories = []
-#     for i, category in enumerate(categories_with_q):
-#         is_lower = True
-#         for category_2 in categories_with_q:
-#             if category['name'] in category_2['queue']:
-#                 is_lower = False
-#                 break
-#
-#         if is_lower:
-#             lower_categories.append(category)
-#
-#     res_categories = []
-#     for category in lower_categories:
-#         res_categories.append(DLowerCategory(id=category["id"], name=category["name"], queue=category['queue']))
-#
-#     return GetLowerCategoriesResponse(categories=res_categories)
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.get-user-expenses")

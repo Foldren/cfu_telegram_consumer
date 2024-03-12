@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import date
 from decimal import Decimal
 
 
@@ -44,10 +43,16 @@ class CCashBalanceOnHandResponse:
 
 
 @dataclass
-class CDataCollectResponse:
-    __slots__ = {"legalEntityID", "categoryName", "amount", "date", "type"}
-    legalEntityID: str
-    categoryName: str
-    amount: Decimal
-    date: str
-    type: str
+class CLinkerValue:
+    __slots__ = {"currentValue", "prevValue"}
+    currentValue: int
+    prevValue: int
+
+
+@dataclass
+class CLinkerGetDashboardPnlExpenses:
+    __slots__ = {"salary", "rent", "package", "anotherExpenses"}
+    salary: CLinkerValue  # Зарплата
+    rent: CLinkerValue  # Аренда
+    package: CLinkerValue  # Упаковка
+    anotherExpenses: CLinkerValue  # Прочие расходы

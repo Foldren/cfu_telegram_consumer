@@ -14,7 +14,7 @@ class CategoryStatus(IntEnum):
 class Category(Model):
     id = BigIntField(pk=True)
     user_id = CharField(max_length=100, index=True, null=True)
-    parent: ForeignKeyRelation['Category'] = ForeignKeyField('models.Category', on_delete=OnDelete.CASCADE,
+    parent: ForeignKeyRelation['Category'] = ForeignKeyField('telegram.Category', on_delete=OnDelete.CASCADE,
                                                              related_name="children", null=True)
     children: ReverseRelation["Category"]  # Связь один ко многим к самому себе (выводим дочерние элементы)
     counterparties: ReverseRelation['Counterparty']
@@ -32,10 +32,10 @@ class Category(Model):
 class Counterparty(Model):
     id = BigIntField(pk=True)
     user_id = CharField(max_length=100, index=True)
-    category: ForeignKeyRelation['Category'] = ForeignKeyField('models.Category',
+    category: ForeignKeyRelation['Category'] = ForeignKeyField('telegram.Category',
                                                                on_delete=OnDelete.CASCADE,
                                                                related_name="counterparties",
-                                                               null=True)
+                                                               null=True)  # Если None, значит подгруженный
     inn = CharField(max_length=12)
     name = CharField(max_length=100)
 
@@ -108,7 +108,7 @@ class SupportWallet(Model):
 class UserWallet(Model):
     id = BigIntField(pk=True)
     user_id = CharField(max_length=100, index=True)
-    support_wallet: ForeignKeyRelation['SupportWallet'] = ForeignKeyField('models.SupportWallet',
+    support_wallet: ForeignKeyRelation['SupportWallet'] = ForeignKeyField('telegram.SupportWallet',
                                                                           on_delete=OnDelete.RESTRICT,
                                                                           related_name="user_wallets", null=False)
 
@@ -126,14 +126,14 @@ class DataCollectType(str, Enum):
 
 class DataCollect(Model):
     id = BigIntField(pk=True)
-    transaction: ForeignKeyRelation['Transaction'] = ForeignKeyField('models.Transaction',
+    transaction: ForeignKeyRelation['Transaction'] = ForeignKeyField('telegram.Transaction',
                                                                      on_delete=OnDelete.CASCADE,
                                                                      related_name="data_collects")
     executor_id = CharField(max_length=100, index=True, null=True)  # id исполнителя (как legal_entity так и user_id)
-    support_wallet: ForeignKeyRelation['SupportWallet'] = ForeignKeyField('models.SupportWallet',
+    support_wallet: ForeignKeyRelation['SupportWallet'] = ForeignKeyField('telegram.SupportWallet',
                                                                           on_delete=OnDelete.RESTRICT,
                                                                           related_name="data_collects")
-    category: ForeignKeyRelation['Category'] = ForeignKeyField('models.Category',
+    category: ForeignKeyRelation['Category'] = ForeignKeyField('telegram.Category',
                                                                on_delete=OnDelete.CASCADE,
                                                                related_name="data_collects")
     type = CharEnumField(enum_type=DataCollectType, description='Тип операции')
