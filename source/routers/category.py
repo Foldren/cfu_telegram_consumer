@@ -5,7 +5,7 @@ from components.requests.category import CreateCategoryRequest, UpdateCategoryRe
 from components.responses.children import CCategory, CBalanceResponse, CCashBalanceOnHandResponse
 from components.responses.category import CreateCategoryResponse, UpdateCategoryResponse, \
     DeleteCategoriesResponse, GetCategoriesResponse, CashBalancesOnHandResponse
-from config import STATIC_CATEGORIES
+from config import STATIC_CATEGORIES, SERVICE_CATEGORIES
 from decorators import consumer
 from db_models.telegram import Category, DataCollect
 from queues import telegram_queue
@@ -79,17 +79,29 @@ async def get_categories(request: GetCategoriesRequest):
     # Если включены сервисные категории то проверяем есть ли они, если нет, создаем для пользователя
     if request.includeStatic:
         stasuses = [0, 1, 3]
-        service_categories = await Category.filter(user_id=request.userID, status=2).all()
+        sc_categories = await Category.filter(user_id=request.userID, status__in=[2, 3]).all()
 
-        if not service_categories:
-            service_categories_obj = []
+        has_static_cs = False
+        has_service_cs = False
 
-            # for sc in SERVICE_CATEGORIES:
-            #     service_categories_obj.append(Category(user_id=request.userID, status=2, name=sc))
-            for sc in STATIC_CATEGORIES:
-                service_categories_obj.append(Category(user_id=request.userID, status=3, name=sc))
+        for category in sc_categories:
+            if category.status == 2:
+                has_service_cs = True
+            if category.status == 3:
+                has_static_cs = True
 
-            await Category.bulk_create(service_categories_obj, ignore_conflicts=True)
+        # Еслси есть статические категории или сервисные
+        if not has_static_cs or not has_service_cs:
+            sc_categories_obj = []
+            if not has_static_cs:
+                for sc in STATIC_CATEGORIES:
+                    sc_categories_obj.append(Category(user_id=request.userID, status=3, name=sc))
+
+            if not has_service_cs:
+                for sc in SERVICE_CATEGORIES:
+                    sc_categories_obj.append(Category(user_id=request.userID, status=2, name=sc))
+
+            await Category.bulk_create(sc_categories_obj, ignore_conflicts=True)
     else:
         stasuses = [0, 1]
 
