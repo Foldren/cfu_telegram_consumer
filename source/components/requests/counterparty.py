@@ -32,6 +32,17 @@ class GetCounterpartiesRequest:
     userID: str
 
 
+@dataclass
+class BindCounterpartyCategoryRequest:
+    __slots__ = {"userID", "categoryID", "counterpartiesID"}
+    userID: str
+    categoryID: int
+    counterpartiesID: list[int]
+
+
+
+
+
 
 
 
