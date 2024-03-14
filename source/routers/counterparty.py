@@ -1,4 +1,6 @@
 from faststream.rabbit import RabbitRouter
+from tortoise.expressions import Q
+
 from components.requests.counterparty import CreateCounterpartyRequest, DeleteCounterpartiesRequest, \
     GetCounterpartiesRequest, UpdateCounterpartyRequest, BindCounterpartyCategoryRequest
 from components.responses.children import CCounterparty
@@ -65,7 +67,10 @@ async def delete_counterparties(request: DeleteCounterpartiesRequest):
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.get-counterparties", request=GetCounterpartiesRequest)
 async def get_counterparties(request: GetCounterpartiesRequest):
-    counterparties = await Counterparty.filter(user_id=request.userID).select_related("category").all()
+    expr = Q(user_id=request.userID) & Q(category_id__isnull=True) if request.showNotDistributed else (
+        Q(user_id=request.userID) & Q(category_id__not_isnull=True))
+
+    counterparties = await Counterparty.filter(expr).select_related("category").all()
     list_counterparties = []
 
     for counterparty in counterparties:
@@ -73,9 +78,11 @@ async def get_counterparties(request: GetCounterpartiesRequest):
             CCounterparty(id=counterparty.id,
                           name=counterparty.name,
                           inn=counterparty.inn,
-                          categoryID=counterparty.category.id,
-                          categoryName=counterparty.category.name,
+                          categoryID=None if request.showNotDistributed else counterparty.category.id,
+                          categoryName=None if request.showNotDistributed else counterparty.category.name,
                           )
         )
+
+    print(GetCounterpartiesResponse(counterparties=list_counterparties))
 
     return GetCounterpartiesResponse(counterparties=list_counterparties)

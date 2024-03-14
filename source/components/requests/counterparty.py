@@ -28,8 +28,8 @@ class DeleteCounterpartiesRequest:
 
 @dataclass
 class GetCounterpartiesRequest:
-    __slots__ = {"userID"}
     userID: str
+    showNotDistributed: bool = False
 
 
 @dataclass
