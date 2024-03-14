@@ -29,7 +29,7 @@ class DeleteCounterpartiesRequest:
 @dataclass
 class GetCounterpartiesRequest:
     userID: str
-    showNotDistributed: bool = False
+    showMode: str = 'distributed'
 
 
 @dataclass

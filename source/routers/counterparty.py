@@ -67,8 +67,16 @@ async def delete_counterparties(request: DeleteCounterpartiesRequest):
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.get-counterparties", request=GetCounterpartiesRequest)
 async def get_counterparties(request: GetCounterpartiesRequest):
-    expr = Q(user_id=request.userID) & Q(category_id__isnull=True) if request.showNotDistributed else (
-        Q(user_id=request.userID) & Q(category_id__not_isnull=True))
+    match request.showMode:
+        case "distributed":
+            expr = Q(user_id=request.userID) & Q(category_id__not_isnull=True)
+        case "not_distributed":
+            expr = Q(user_id=request.userID) & Q(category_id__isnull=True)
+        case "all":
+            expr = Q(user_id=request.userID)
+        case _:
+            raise ValueError("Доступные значения поля showMode: all - все, distributed - распределенные по категориям,"
+                             "not_distributed - не распределенные")
 
     counterparties = await Counterparty.filter(expr).select_related("category").all()
     list_counterparties = []
@@ -78,11 +86,9 @@ async def get_counterparties(request: GetCounterpartiesRequest):
             CCounterparty(id=counterparty.id,
                           name=counterparty.name,
                           inn=counterparty.inn,
-                          categoryID=None if request.showNotDistributed else counterparty.category.id,
-                          categoryName=None if request.showNotDistributed else counterparty.category.name,
+                          categoryID=counterparty.category.id if request.showMode == "distributed" else None,
+                          categoryName=counterparty.category.name if request.showMode == "distributed" else None
                           )
         )
-
-    print(GetCounterpartiesResponse(counterparties=list_counterparties))
 
     return GetCounterpartiesResponse(counterparties=list_counterparties)
