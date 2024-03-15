@@ -28,32 +28,44 @@ async def bind_counterparties_category(request: BindCounterpartyCategoryRequest)
 @consumer(router=router, queue=telegram_queue, pattern="telegram.create-counterparty",
           request=CreateCounterpartyRequest)
 async def create_counterparty(request: CreateCounterpartyRequest):
-    created_counterparty = await Counterparty.create(
-        user_id=request.userID,
-        name=request.name,
-        inn=request.inn,
-        category_id=request.categoryID,
-    )
+    user_counterparties_inn = await Counterparty.filter(user_id=request.userID).values_list("inn", flat=True)
 
-    return CreateCounterpartyResponse(id=created_counterparty.id)
+    if request.inn not in user_counterparties_inn:
+        created_counterparty = await Counterparty.create(
+            user_id=request.userID,
+            name=request.name,
+            inn=request.inn,
+            category_id=request.categoryID,
+        )
+
+        return CreateCounterpartyResponse(id=created_counterparty.id)
+
+    else:
+        raise ValueError("Контрагент с таким ИНН уже добавлен под вашим аккаунтом.")
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.update-counterparty",
           request=UpdateCounterpartyRequest)
 async def update_counterparty(request: UpdateCounterpartyRequest):
-    counterparty = await Counterparty.filter(id=request.counterpartyID, user_id=request.userID).first()
+    user_counterparties_inn = await Counterparty.filter(user_id=request.userID).values_list("inn", flat=True)
 
-    if request.name:
-        counterparty.name = request.name
-    if request.inn:
-        counterparty.inn = request.inn
-    if request.categoryID:
-        counterparty.category_id = request.categoryID
+    if request.inn not in user_counterparties_inn:
+        counterparty = await Counterparty.filter(id=request.counterpartyID, user_id=request.userID).first()
 
-    await counterparty.save()
-    await counterparty.refresh_from_db()
+        if request.name:
+            counterparty.name = request.name
+        if request.inn:
+            counterparty.inn = request.inn
+        if request.categoryID:
+            counterparty.category_id = request.categoryID
 
-    return UpdateCounterpartyResponse(id=counterparty.id)
+        await counterparty.save()
+        await counterparty.refresh_from_db()
+
+        return UpdateCounterpartyResponse(id=counterparty.id)
+
+    else:
+        raise ValueError("Контрагент с таким ИНН уже добавлен под вашим аккаунтом.")
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.delete-counterparties",
