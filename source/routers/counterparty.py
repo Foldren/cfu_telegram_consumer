@@ -1,6 +1,5 @@
 from faststream.rabbit import RabbitRouter
 from tortoise.expressions import Q
-
 from components.requests.counterparty import CreateCounterpartyRequest, DeleteCounterpartiesRequest, \
     GetCounterpartiesRequest, UpdateCounterpartyRequest, BindCounterpartyCategoryRequest
 from components.responses.children import CCounterparty

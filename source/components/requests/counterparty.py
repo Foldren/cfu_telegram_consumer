@@ -7,14 +7,14 @@ class CreateCounterpartyRequest:
     userID: str
     name: str
     inn: str
-    categoryID: int
+    categoryID: int | None
 
 
 @dataclass
 class UpdateCounterpartyRequest:
     counterpartyID: int
     userID: str
-    categoryID: int = None
+    categoryID: int | None = None
     name: str = None
     inn: str = None
 
