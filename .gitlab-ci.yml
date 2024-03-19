@@ -1,0 +1,101 @@
+stages:
+  - build
+  - lint
+#  - test
+  - deploy
+
+.git_prepare: &git_prepare
+  - git fetch --all
+  - git branch -vv
+  - git checkout --force $CI_COMMIT_BRANCH
+  - git reset --hard origin/$CI_COMMIT_BRANCH
+
+#▒default:
+#  image: docker:24.0.6
+#  services:
+#    - docker:24.0.6-dind
+
+#▒.node_job:
+#  image: node:latest
+#  before_script:
+#    - export PATH="$PATH:/home/user/.nvm/versions/node/v20.11.1/bin/"
+#    - source /home/user/.nvm/nvm.sh
+#    - nvm use 20.11.1
+#    - node -v
+#    - npm -v
+#    - pnpm -v
+#    - sudo chown -R $USER:$USER /home/user/.nvm
+#    - chmod -R 755 /home/user/.nvm
+#    - corepack enable
+#    - corepack prepare pnpm@latest-8 --activate
+#    - pnpm config set store-dir .pnpm-store
+#    - pnpm install
+#    - pnpm add typescript
+#  cache:
+#    paths:
+#      - node_modules/
+#      - .pnpm-store/
+
+#lint:
+#  stage: lint
+#  extends: .node_job
+#  tags:
+#    - bankconsumer
+#  script:
+#   - pnpm lint
+#   - echo "No lint issues found."
+
+##=========== Build for PROD  ===========##
+#build_prod:
+#  stage: build
+#  extends: .node_job
+#  script:
+#    - pnpm build
+#    - echo "Build was success"
+#  only:
+#    - main
+#  tags:
+#    - bankconsumer
+
+deploy_prod:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - whoami
+#    - git config --global --add safe.directory /home/user/cfu/fmc-bank-consumer/
+    - cd /home/user/cfu/fmc-tg-consumer/
+#    - *git_prepare
+    - sudo docker ps
+    - sudo docker compose --env-file ./.env up --build -d
+  only:
+    - main
+  tags:
+    - telegramconsumer
+
+##=========== Build for DEV  ===========##
+#build_dev:
+#  stage: build
+#  extends: .node_job
+#  script:
+#    - pnpm build
+#    - echo "Build was success"
+#  tags:
+#    - dev-bankconsumer
+
+deploy_dev:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - whoami
+    - cd /home/user/cfu/fmc-tg-consumer/
+#    - *git_prepare
+    - sudo docker ps
+    - sudo docker compose --env-file ./.env up --build -d
+  only:
+    - dev
+  tags:
+    - dev-telegramconsumer
