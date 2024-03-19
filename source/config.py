@@ -15,7 +15,7 @@ TORTOISE_CONFIG = {
         "bank": environ['BANK_PG_URL']
     },
     "apps": {
-        "telegram": {"models": ["db_models.telegram"], "default_connection": "telegram"},
+        "telegram": {"models": ["db_models.telegram", "aerich.models"], "default_connection": "telegram"},
         "bank": {"models": ["db_models.bank"], "default_connection": "bank"}
     }
 }

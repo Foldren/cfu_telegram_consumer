@@ -11,7 +11,7 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
     "parent_id" BIGINT REFERENCES "categories" ("id") ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS "idx_categories_user_id_b282c5" ON "categories" ("user_id");
-COMMENT ON COLUMN "categories"."status" IS 'hidden: 0\nactive: 1\nservice: 2';
+COMMENT ON COLUMN "categories"."status" IS 'hidden: 0\nactive: 1\nservice: 2\nstatic: 3';
 CREATE TABLE IF NOT EXISTS "counterparties" (
     "id" BIGSERIAL NOT NULL PRIMARY KEY,
     "user_id" VARCHAR(100) NOT NULL,
@@ -41,18 +41,21 @@ CREATE TABLE IF NOT EXISTS "support_wallets" (
     "name" VARCHAR(8) NOT NULL
 );
 COMMENT ON COLUMN "support_wallets"."name" IS 'Название';
+CREATE TABLE IF NOT EXISTS "transaction" (
+    "id" BIGSERIAL NOT NULL PRIMARY KEY,
+    "date" DATE NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "idx_transaction_date_efa78f" ON "transaction" ("date");
 CREATE TABLE IF NOT EXISTS "data_collects" (
     "id" BIGSERIAL NOT NULL PRIMARY KEY,
-    "transaction_id" BIGINT NOT NULL,
     "executor_id" VARCHAR(100),
-    "trxn_date" DATE NOT NULL,
     "type" VARCHAR(6) NOT NULL,
     "amount" DECIMAL(19,2) NOT NULL,
-    "category_id" BIGINT REFERENCES "categories" ("id") ON DELETE CASCADE,
-    "support_wallet_id" BIGINT NOT NULL REFERENCES "support_wallets" ("id") ON DELETE RESTRICT
+    "category_id" BIGINT NOT NULL REFERENCES "categories" ("id") ON DELETE CASCADE,
+    "support_wallet_id" BIGINT NOT NULL REFERENCES "support_wallets" ("id") ON DELETE RESTRICT,
+    "transaction_id" BIGINT NOT NULL REFERENCES "transaction" ("id") ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS "idx_data_collec_executo_96be07" ON "data_collects" ("executor_id");
-CREATE INDEX IF NOT EXISTS "idx_data_collec_trxn_da_755215" ON "data_collects" ("trxn_date");
 COMMENT ON COLUMN "data_collects"."type" IS 'Тип операции';
 CREATE TABLE IF NOT EXISTS "user_wallets" (
     "id" BIGSERIAL NOT NULL PRIMARY KEY,
