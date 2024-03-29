@@ -149,9 +149,9 @@ async def get_categories(request: GetCategoriesRequest) -> GetCategoriesResponse
           request=CashBalancesOnHandRequest)
 async def get_user_cash_balances_on_hand(request: CashBalancesOnHandRequest) -> CashBalancesOnHandResponse:
     """
-    Роут на получение балансов на расчетных счетах пользователей
-    :param request: request объект на получение балансов CashBalancesOnHandRequest
-    :return: response объект на получение балансов CashBalancesOnHandResponse
+    Роут на получение остатка на счетах ЮР лиц
+    :param request: request объект на получение остатка на счетах ЮР лиц CashBalancesOnHandRequest
+    :return: response объект на получение остатка на счетах ЮР лиц CashBalancesOnHandResponse
     """
 
     users_id = request.usersID
