@@ -6,15 +6,21 @@ from components.responses.children import CCategory, CBalanceResponse, CCashBala
 from components.responses.category import CreateCategoryResponse, UpdateCategoryResponse, \
     DeleteCategoriesResponse, GetCategoriesResponse, CashBalancesOnHandResponse
 from config import STATIC_CATEGORIES, SERVICE_CATEGORIES
-from decorators import consumer
+from components.decorators import consumer
 from db_models.telegram import Category, DataCollect
-from queues import telegram_queue
+from components.queues import telegram_queue
 
 router = RabbitRouter()
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.create-category", request=CreateCategoryRequest)
-async def create_category(request: CreateCategoryRequest):
+async def create_category(request: CreateCategoryRequest) -> CreateCategoryResponse:
+    """
+    Роут на создание категории. Также проверяет на уровень вложенности (максимальный - 5)
+    :param request: request объект на создание категории CreateCategoryRequest
+    :return: response объект на создание категории CreateCategoryResponse
+    """
+
     if request.parentID is not None:
         category = await Category.filter(id=request.parentID, user_id=request.userID).select_related(
             "parent",
@@ -44,7 +50,13 @@ async def create_category(request: CreateCategoryRequest):
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.update-category", request=UpdateCategoryRequest)
-async def update_category(request: UpdateCategoryRequest):
+async def update_category(request: UpdateCategoryRequest) -> UpdateCategoryResponse:
+    """
+    Роут на обновление категории. Также стоит ограничение на обновление сервисных и статических категорий
+    :param request: request объект на обновление категории UpdateCategoryRequest
+    :return: response объект на обновление категории UpdateCategoryResponse
+    """
+
     category = await Category.filter(id=request.categoryID, user_id=request.userID).first()
 
     if category.status in [2, 3]:
@@ -62,7 +74,13 @@ async def update_category(request: UpdateCategoryRequest):
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.delete-categories", request=DeleteCategoriesRequest)
-async def delete_categories(request: DeleteCategoriesRequest):
+async def delete_categories(request: DeleteCategoriesRequest) -> DeleteCategoriesResponse:
+    """
+    Роут на удаление категории. Также стоит ограничение на удаление сервисных и статических категорий
+    :param request: request объект на удаление категории DeleteCategoryRequest
+    :return: response объект на удаление категории DeleteCategoryResponse
+    """
+
     categories = await Category.filter(id__in=request.categoriesID, user_id=request.userID)
 
     for category in categories:
@@ -75,8 +93,14 @@ async def delete_categories(request: DeleteCategoriesRequest):
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.get-categories", request=GetCategoriesRequest)
-async def get_categories(request: GetCategoriesRequest):
-    # Если включены сервисные категории то проверяем есть ли они, если нет, создаем для пользователя
+async def get_categories(request: GetCategoriesRequest) -> GetCategoriesResponse:
+    """
+    Роут на получение списка категорий. Проверяет есть ли статические и сервисные категории, если нет, создает
+    :param request: request объект на получение списка категорий GetCategoriesRequest
+    :return: response объект на получение списка категорий GetCategoriesResponse
+    """
+
+    # Если включены сервисные категории, то проверяем есть ли они, если нет, создаем для пользователя
     if request.includeStatic:
         stasuses = [0, 1, 3]
         sc_categories = await Category.filter(user_id=request.userID, status__in=[2, 3]).all()
@@ -90,7 +114,7 @@ async def get_categories(request: GetCategoriesRequest):
             if category.status == 3:
                 has_static_cs = True
 
-        # Еслси есть статические категории или сервисные
+        # Если есть статические категории или сервисные
         if not has_static_cs or not has_service_cs:
             sc_categories_obj = []
             if not has_static_cs:
@@ -121,14 +145,15 @@ async def get_categories(request: GetCategoriesRequest):
     return GetCategoriesResponse(categories=list_categories)
 
 
-@consumer(router=router, queue=telegram_queue, pattern="telegram.get-user-expenses")
-async def get_user_expenses():
-    return 'Get user expenses handler is working!'
-
-
 @consumer(router=router, queue=telegram_queue, pattern="telegram.get-user-cash-balances-on-hand",
           request=CashBalancesOnHandRequest)
-async def get_user_cash_balances_on_hand(request: CashBalancesOnHandRequest):
+async def get_user_cash_balances_on_hand(request: CashBalancesOnHandRequest) -> CashBalancesOnHandResponse:
+    """
+    Роут на получение балансов на расчетных счетах пользователей
+    :param request: request объект на получение балансов CashBalancesOnHandRequest
+    :return: response объект на получение балансов CashBalancesOnHandResponse
+    """
+
     users_id = request.usersID
     legal_entities_id = request.legalEntitiesID
 

@@ -8,6 +8,7 @@ services:
       - TZ=Europe/Moscow
     env_file:
       - ./source/.env
+    profiles: [rebuild]
     depends_on:
       - telegram_db
     networks:

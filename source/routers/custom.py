@@ -6,8 +6,8 @@ from components.responses.custom import LinkerGetDashboardPnlResponse
 from config import STATIC_CATEGORIES, INN_MARKETPLACES
 from db_models.bank import DataCollect as BankDataCollect
 from db_models.telegram import DataCollect as TgDataCollect, Counterparty
-from decorators import consumer
-from queues import telegram_queue
+from components.decorators import consumer
+from components.queues import telegram_queue
 
 router = RabbitRouter()
 
@@ -15,6 +15,13 @@ router = RabbitRouter()
 @consumer(router=router, queue=telegram_queue, pattern="telegram.get-dashboard-pnl",
           request=LinkerGetDashboardPnlRequest)
 async def get_dashboard_pnl(request: LinkerGetDashboardPnlRequest) -> LinkerGetDashboardPnlResponse:
+    """
+    Роут на получение данных для банковского виджета, берет данные из банковского мс также, для распределения
+    расходов по категориям
+    :param request: request объект для банковского виджета LinkerGetDashboardPnlRequest
+    :return: response объект для банковского виджета LinkerGetDashboardPnlResponse
+    """
+
     cur_start_date = datetime.strptime(request.dateFrom, "%Y-%m-%d")
     cur_end_date = datetime.strptime(request.dateTo, "%Y-%m-%d")
     prev_start_date = cur_start_date - (cur_end_date - cur_start_date) - timedelta(days=1)
@@ -107,5 +114,4 @@ async def get_dashboard_pnl(request: LinkerGetDashboardPnlRequest) -> LinkerGetD
 
     response.expenses = expenses
 
-    print(response)
     return response

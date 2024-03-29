@@ -5,16 +5,22 @@ from components.requests.counterparty import CreateCounterpartyRequest, DeleteCo
 from components.responses.children import CCounterparty
 from components.responses.counterparty import CreateCounterpartyResponse, DeleteCounterpartiesResponse, \
     GetCounterpartiesResponse, UpdateCounterpartyResponse, BindCounterpartyCategoryResponse
-from decorators import consumer
+from components.decorators import consumer
 from db_models.telegram import Counterparty
-from queues import telegram_queue
+from components.queues import telegram_queue
 
 router = RabbitRouter()
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.bind-counterparties-category",
           request=BindCounterpartyCategoryRequest)
-async def bind_counterparties_category(request: BindCounterpartyCategoryRequest):
+async def bind_counterparties_category(request: BindCounterpartyCategoryRequest) -> BindCounterpartyCategoryResponse:
+    """
+    Роут на прикрепление категории к контрагентам
+    :param request: request объект на прикрепление категории BindCounterpartyCategoryRequest
+    :return: response объект на прикрепление категории BindCounterpartyCategoryResponse
+    """
+
     counterparties = await Counterparty.filter(id__in=request.counterpartiesID, user_id=request.userID).all()
 
     for c in counterparties:
@@ -27,7 +33,13 @@ async def bind_counterparties_category(request: BindCounterpartyCategoryRequest)
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.create-counterparty",
           request=CreateCounterpartyRequest)
-async def create_counterparty(request: CreateCounterpartyRequest):
+async def create_counterparty(request: CreateCounterpartyRequest) -> CreateCounterpartyResponse:
+    """
+    Роут на создание контрагента, с проверкой на существование для данного юзера
+    :param request: request объект на создание контрагента CreateCounterpartyRequest
+    :return: response объект на создание контрагента CreateCounterpartyResponse
+    """
+
     user_counterparties_inn = await Counterparty.filter(user_id=request.userID).values_list("inn", flat=True)
 
     if request.inn not in user_counterparties_inn:
@@ -46,7 +58,13 @@ async def create_counterparty(request: CreateCounterpartyRequest):
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.update-counterparty",
           request=UpdateCounterpartyRequest)
-async def update_counterparty(request: UpdateCounterpartyRequest):
+async def update_counterparty(request: UpdateCounterpartyRequest) -> UpdateCounterpartyResponse:
+    """
+    Роут на обновление контрагента, с проверкой на существование по ИНН для данного юзера
+    :param request: request объект на обновление контрагента UpdateCounterpartyRequest
+    :return: response объект на обновление контрагента UpdateCounterpartyResponse
+    """
+
     user_counterparties_inn = await Counterparty.filter(user_id=request.userID).values_list("inn", flat=True)
 
     if request.inn not in user_counterparties_inn:
@@ -70,14 +88,27 @@ async def update_counterparty(request: UpdateCounterpartyRequest):
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.delete-counterparties",
           request=DeleteCounterpartiesRequest)
-async def delete_counterparties(request: DeleteCounterpartiesRequest):
+async def delete_counterparties(request: DeleteCounterpartiesRequest) -> DeleteCounterpartiesResponse:
+    """
+    Роут на удаление контрагентов
+    :param request: request объект на удаление контрагентов DeleteCounterpartiesRequest
+    :return: response объект на удаление контрагентов DeleteCounterpartiesResponse
+    """
+
     await Counterparty.filter(id__in=request.counterpartiesID, user_id=request.userID).delete()
 
     return DeleteCounterpartiesResponse(counterpartiesID=request.counterpartiesID)
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.get-counterparties", request=GetCounterpartiesRequest)
-async def get_counterparties(request: GetCounterpartiesRequest):
+async def get_counterparties(request: GetCounterpartiesRequest) -> GetCounterpartiesResponse:
+    """
+    Роут на получение списка контрагентов, с возможностью выбора showMode: all - все,
+    distributed - распределенные по категориям, not_distributed - не распределенные
+    :param request: request объект на получение списка контрагентов GetCounterpartiesRequest
+    :return: response объект на получение списка контрагентов GetCounterpartiesResponse
+    """
+
     match request.showMode:
         case "distributed":
             expr = Q(user_id=request.userID) & Q(category_id__not_isnull=True)

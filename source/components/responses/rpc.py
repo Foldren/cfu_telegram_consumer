@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-from simplejson import dumps
+from json import dumps
 from typing import Any
 
 
@@ -15,4 +15,8 @@ class RpcResponse:
     error: RpcError = None
 
     async def get_json(self):
+        """
+        Функция для получения rpc response в формате json, исключая поля со значениями None
+        :return: response в формате json
+        """
         return dumps(asdict(self, dict_factory=lambda x: {k: v for (k, v) in x if v is not None}))

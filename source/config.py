@@ -1,6 +1,7 @@
 from os import environ, getcwd
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 IS_THIS_LOCAL = "Pycharm" in str(getcwd())
@@ -23,11 +24,7 @@ TORTOISE_CONFIG = {
 INN_MARKETPLACES = [9701048328, 7705935687, 7721546864, 7704217370, 7704357909]
 
 # Для операций в телеграм боте
-SERVICE_CATEGORIES = [
-    "Выдача в подотчет", "Возврат подотчета"
-]
+SERVICE_CATEGORIES = ["Выдача в подотчет", "Возврат подотчета"]
 
 # Не редактируемые категории
-STATIC_CATEGORIES = [
-    "Зарплата", "Аренда", "Упаковка"
-]
+STATIC_CATEGORIES = ["Зарплата", "Аренда", "Упаковка"]
