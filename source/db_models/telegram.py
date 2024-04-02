@@ -21,6 +21,7 @@ class Category(Model):
     data_collects: ReverseRelation['DataCollect']
     name = CharField(max_length=100)
     status = IntEnumField(enum_type=CategoryStatus, default=1, null=True)
+    iconID = BigIntField(default=0, null=True)
 
     class Meta:
         table = "categories"

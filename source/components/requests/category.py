@@ -23,6 +23,7 @@ class CreateCategoryRequest:
     name: str
     observersID: list[str] = None
     parentID: int = None
+    iconID: int = 0
 
 
 @dataclass
@@ -32,6 +33,7 @@ class UpdateCategoryRequest:
     name: str = None
     observersID: list[str] = None
     status: int = None
+    iconID: int = 0
 
 
 @dataclass

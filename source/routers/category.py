@@ -43,7 +43,8 @@ async def create_category(request: CreateCategoryRequest) -> CreateCategoryRespo
     created_category = await Category.create(
         user_id=request.userID,
         parent_id=request.parentID,
-        name=request.name
+        name=request.name,
+        iconID=request.iconID
     )
 
     return CreateCategoryResponse(id=created_category.id)
@@ -66,6 +67,8 @@ async def update_category(request: UpdateCategoryRequest) -> UpdateCategoryRespo
         category.name = request.name
     if request.status is not None:
         category.status = request.status
+    if request.iconID is not None:
+        category.iconID = request.iconID
 
     await category.save()
     await category.refresh_from_db()
@@ -140,7 +143,8 @@ async def get_categories(request: GetCategoriesRequest) -> GetCategoriesResponse
         list_categories.append(CCategory(id=category.id,
                                          name=category.name,
                                          status=category.status,
-                                         hasChildren=category.id in categories_with_child_id))
+                                         hasChildren=category.id in categories_with_child_id,
+                                         iconID=category.iconID))
 
     return GetCategoriesResponse(categories=list_categories)
 
