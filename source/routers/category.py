@@ -67,7 +67,7 @@ async def update_category(request: UpdateCategoryRequest) -> UpdateCategoryRespo
         category.name = request.name
     if request.status is not None:
         category.status = request.status
-    if request.iconID is not None:
+    if request.iconID != 0:
         category.iconID = request.iconID
 
     await category.save()
