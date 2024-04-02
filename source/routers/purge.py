@@ -1,4 +1,5 @@
 from faststream.rabbit import RabbitRouter
+from components.queues import telegram_queue
 
 router = RabbitRouter()
 

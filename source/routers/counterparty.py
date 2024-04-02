@@ -128,8 +128,8 @@ async def get_counterparties(request: GetCounterpartiesRequest) -> GetCounterpar
             CCounterparty(id=counterparty.id,
                           name=counterparty.name,
                           inn=counterparty.inn,
-                          categoryID=counterparty.category.id if request.showMode == "distributed" else None,
-                          categoryName=counterparty.category.name if request.showMode == "distributed" else None
+                          categoryID=counterparty.category.id if counterparty.category is not None else None,
+                          categoryName=counterparty.category.name if counterparty.category is not None else None
                           )
         )
 
