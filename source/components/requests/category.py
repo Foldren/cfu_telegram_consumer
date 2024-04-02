@@ -33,7 +33,7 @@ class UpdateCategoryRequest:
     name: str = None
     observersID: list[str] = None
     status: int = None
-    iconID: int = 0
+    iconID: int = None
 
 
 @dataclass
