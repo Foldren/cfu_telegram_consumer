@@ -1,6 +1,6 @@
 from enum import Enum, IntEnum
 from tortoise import Model
-from tortoise.fields import TextField, ForeignKeyField, OnDelete, \
+from tortoise.fields import ForeignKeyField, OnDelete, \
     ForeignKeyRelation, ReverseRelation, BigIntField, CharField, CharEnumField, DecimalField, DateField, IntEnumField
 
 
@@ -47,79 +47,6 @@ class Counterparty(Model):
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-class NotifyGroup(Model):
-    id = BigIntField(pk=True)
-    user_id = CharField(max_length=100, index=True)
-    chat_id = CharField(max_length=20, unique=True)
-    name = TextField(maxlength=300)
-
-    class Meta:
-        table = "notification_groups"
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-
-
-class PermissionName(str, Enum):
-    report_request = 'report_request'
-    buttons = 'buttons'
-
-
-class PermissionAction(str, Enum):
-    conciliate = 'conciliate'
-    approve = 'approve'
-    treasure = 'treasure'
-    timekeep = 'timekeep'
-
-
-class Permission(Model):
-    id = BigIntField(pk=True)
-    user_id = CharField(max_length=100, index=True)
-    name = CharEnumField(enum_type=PermissionName, description='Название разрешения')
-    action = CharEnumField(enum_type=PermissionAction, description='Наименование действия')
-
-    class Meta:
-        table = "permissions"
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-
-
-class WalletName(str, Enum):
-    cash = 'Наличные'
-    another = 'Другой'
-    tinkoff = 'Тинькофф'
-    module = 'Модуль'
-    tochka = 'Точка'
-
-
-class SupportWallet(Model):
-    id = BigIntField(pk=True)
-    name = CharEnumField(enum_type=WalletName, description='Название')
-    user_wallets: ReverseRelation['UserWallet']
-    data_collects: ReverseRelation['DataCollect']
-
-    class Meta:
-        table = "support_wallets"
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-
-
-class UserWallet(Model):
-    id = BigIntField(pk=True)
-    user_id = CharField(max_length=100, index=True)
-    support_wallet: ForeignKeyRelation['SupportWallet'] = ForeignKeyField('telegram.SupportWallet',
-                                                                          on_delete=OnDelete.RESTRICT,
-                                                                          related_name="user_wallets", null=False)
-
-    class Meta:
-        table = "user_wallets"
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-
-
 class DataCollectType(str, Enum):
     income = "Доход"
     cost = "Расход"
@@ -131,9 +58,6 @@ class DataCollect(Model):
                                                                      on_delete=OnDelete.CASCADE,
                                                                      related_name="data_collects")
     executor_id = CharField(max_length=100, index=True, null=True)  # id исполнителя (как legal_entity так и user_id)
-    support_wallet: ForeignKeyRelation['SupportWallet'] = ForeignKeyField('telegram.SupportWallet',
-                                                                          on_delete=OnDelete.RESTRICT,
-                                                                          related_name="data_collects")
     category: ForeignKeyRelation['Category'] = ForeignKeyField('telegram.Category',
                                                                on_delete=OnDelete.CASCADE,
                                                                related_name="data_collects")
