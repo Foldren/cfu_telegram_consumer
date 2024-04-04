@@ -58,6 +58,8 @@ async def update_category(request: UpdateCategoryRequest) -> UpdateCategoryRespo
     :return: response объект на обновление категории UpdateCategoryResponse
     """
 
+    print(request)
+
     category = await Category.filter(id=request.categoryID, user_id=request.userID).first()
 
     if category.status in [2, 3]:
