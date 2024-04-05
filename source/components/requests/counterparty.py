@@ -32,14 +32,6 @@ class GetCounterpartiesRequest:
     showMode: str = 'distributed'
 
 
-@dataclass
-class BindCounterpartyCategoryRequest:
-    __slots__ = {"userID", "categoryID", "counterpartiesID"}
-    userID: str
-    categoryID: int
-    counterpartiesID: list[int]
-
-
 
 
 

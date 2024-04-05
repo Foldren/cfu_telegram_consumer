@@ -26,11 +26,5 @@ class GetCounterpartiesResponse:
     counterparties: list[CCounterparty]
 
 
-@dataclass
-class BindCounterpartyCategoryResponse:
-    __slots__ = {"counterpartiesID"}
-    counterpartiesID: list[int]
-
-
 
 

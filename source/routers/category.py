@@ -7,7 +7,7 @@ from components.responses.category import CreateCategoryResponse, UpdateCategory
     DeleteCategoriesResponse, GetCategoriesResponse, CashBalancesOnHandResponse
 from config import STATIC_CATEGORIES, SERVICE_CATEGORIES
 from components.decorators import consumer
-from db_models.telegram import Category, DataCollect
+from db_models.telegram import Category, DataCollect, Counterparty
 from components.queues import telegram_queue
 
 router = RabbitRouter()
@@ -47,6 +47,15 @@ async def create_category(request: CreateCategoryRequest) -> CreateCategoryRespo
         iconID=request.iconID
     )
 
+    # Привязываем контрагентов к категории
+    if request.counterpartiesID is not None:
+        counterparties = await Counterparty.filter(id__in=request.counterpartiesID).all()
+
+        for cp in counterparties:
+            cp.category_id = created_category.id
+
+        await Counterparty.bulk_update(counterparties, fields=['category_id'])
+
     return CreateCategoryResponse(id=created_category.id)
 
 
@@ -69,6 +78,14 @@ async def update_category(request: UpdateCategoryRequest) -> UpdateCategoryRespo
         category.status = request.status
     if request.iconID is not None:
         category.iconID = request.iconID
+    # Привязываем контрагентов к категории
+    if request.counterpartiesID is not None:
+        counterparties = await Counterparty.filter(id__in=request.counterpartiesID).all()
+
+        for cp in counterparties:
+            cp.category_id = category.id
+
+        await Counterparty.bulk_update(counterparties, fields=['category_id'])
 
     await category.save()
     await category.refresh_from_db()

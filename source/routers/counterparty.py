@@ -1,34 +1,15 @@
 from faststream.rabbit import RabbitRouter
 from tortoise.expressions import Q
 from components.requests.counterparty import CreateCounterpartyRequest, DeleteCounterpartiesRequest, \
-    GetCounterpartiesRequest, UpdateCounterpartyRequest, BindCounterpartyCategoryRequest
+    GetCounterpartiesRequest, UpdateCounterpartyRequest
 from components.responses.children import CCounterparty
 from components.responses.counterparty import CreateCounterpartyResponse, DeleteCounterpartiesResponse, \
-    GetCounterpartiesResponse, UpdateCounterpartyResponse, BindCounterpartyCategoryResponse
+    GetCounterpartiesResponse, UpdateCounterpartyResponse
 from components.decorators import consumer
 from db_models.telegram import Counterparty
 from components.queues import telegram_queue
 
 router = RabbitRouter()
-
-
-@consumer(router=router, queue=telegram_queue, pattern="telegram.bind-counterparties-category",
-          request=BindCounterpartyCategoryRequest)
-async def bind_counterparties_category(request: BindCounterpartyCategoryRequest) -> BindCounterpartyCategoryResponse:
-    """
-    Роут на прикрепление категории к контрагентам
-    :param request: request объект на прикрепление категории BindCounterpartyCategoryRequest
-    :return: response объект на прикрепление категории BindCounterpartyCategoryResponse
-    """
-
-    counterparties = await Counterparty.filter(id__in=request.counterpartiesID, user_id=request.userID).all()
-
-    for c in counterparties:
-        c.category_id = request.categoryID
-
-    await Counterparty.bulk_update(counterparties, fields=['category_id'])
-
-    return BindCounterpartyCategoryResponse(counterpartiesID=request.counterpartiesID)
 
 
 @consumer(router=router, queue=telegram_queue, pattern="telegram.create-counterparty",

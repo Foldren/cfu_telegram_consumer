@@ -21,6 +21,7 @@ class ExpensesRequest:
 class CreateCategoryRequest:
     userID: str
     name: str
+    counterpartiesID: list[int] = None
     observersID: list[str] = None
     parentID: int = None
     iconID: int = 0
@@ -30,6 +31,7 @@ class CreateCategoryRequest:
 class UpdateCategoryRequest:
     categoryID: int
     userID: str
+    counterpartiesID: list[int] = None
     name: str = None
     observersID: list[str] = None
     status: int = None
